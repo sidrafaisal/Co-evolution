@@ -6,39 +6,39 @@ import java.util.Random;
 public class Resolution_Functions implements CResolution_Functions {
 	
 	public String bestSource (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String globalVote (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String latest (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String threshold (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String best (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String topN (String[] args) {
-		Arrays.sort(args);
+	
 		return args[0];
 	}	
 	public String chooseDepending (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String chooseCorresponding (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 	public String mostComplete (String[] args) {
-		Arrays.sort(args);
+
 		return args[0];
 	}	
 //requires metadata as well

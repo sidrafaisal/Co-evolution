@@ -26,14 +26,19 @@ public class chooseStrategy {
 		{
 		case "syncsourceNignorelocal":
 			syncsourceNignorelocal();
+			break;
 		case "syncsourceNkeeplocalBnotconflicts":
 			syncsourceNkeeplocalBnotconflicts();
+			break;
 		case "syncsourceNkeeplocalWresolvedconflicts":
 			syncsourceNkeeplocalWresolvedconflicts();	
+			break;
 		case "nsyncsourceBkeeplocal":
 			nsyncsourceBkeeplocal();
+			break;
 		case "nsyncsourceNignorelocal":
 			nsyncsourceNignorelocal();		
+			break;
 		}		
 	}
 	

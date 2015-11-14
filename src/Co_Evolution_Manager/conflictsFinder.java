@@ -111,14 +111,14 @@ public class conflictsFinder {
 					System.out.println("add after resolve...........");
 				}
 			}
-			model.getGraph().delete(stmt.asTriple());	
+		//	model.getGraph().delete(stmt.asTriple());	
 		} 
 
 		try {				
-			model.write(new FileOutputStream(main.sourceAdditionsChangeset, true),"NT");
+//			model.write(new FileOutputStream(main.sourceAdditionsChangeset),"NT");
 			omodel.write(new FileOutputStream(main.newTarget),"NT");
-			if (model.getGraph().size() == 0 )
-				System.out.println("Finished for source...........");
+	//		if (model.getGraph().size() == 0 )
+		//		System.out.println("Finished for source...........");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -157,7 +157,7 @@ public class conflictsFinder {
 				flag_DT = true;
 					
 			if (!flag_AT && flag_T && !flag_DT)  //deleted by source
-				;
+				; //already deleted from T during processing
 			else if (!flag_AT && flag_T && flag_DT)  //deleted by source and target			
 				;
 			else if (flag_AT && !flag_T && !flag_DT)  //deleted by source and added by target			
@@ -167,14 +167,14 @@ public class conflictsFinder {
 			else if (flag_AT && flag_T && flag_DT) { //deleted by source and modified by target
 				System.out.println("add after resolve...........");				
 			}
-			model.getGraph().delete(stmt.asTriple());	
+		//	model.getGraph().delete(stmt.asTriple());	
 		} 
 
 		try {				
-			model.write(new FileOutputStream(main.sourceDeletionsChangeset, true),"NT");
-			omodel.write(new FileOutputStream(main.newTarget, true),"NT");
-			if (model.getGraph().size() == 0 )
-				System.out.println("Finished for source...........");
+		//	model.write(new FileOutputStream(main.sourceDeletionsChangeset, true),"NT");
+			omodel.write(new FileOutputStream(main.newTarget),"NT");
+		//	if (model.getGraph().size() == 0 )
+			//	System.out.println("Finished for source...........");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -197,14 +197,14 @@ public class conflictsFinder {
 		}
 				
 		for (Triple t : triplestoDelete) {
-			tmodel.getGraph().delete(t);		    
+		//	tmodel.getGraph().delete(t);		    
 		    itmodel.getGraph().delete(t);
 		}
 		
 		try {				
-			itmodel.write(new FileOutputStream(main.initialtarget, true),"NT");
-			if (tmodel.getGraph().size() == 0 )
-				System.out.println("Finished for target...........");
+			itmodel.write(new FileOutputStream(main.initialtarget),"NT");
+		//	if (tmodel.getGraph().size() == 0 )
+			//	System.out.println("Finished for target...........");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -225,14 +225,14 @@ public class conflictsFinder {
 		}
 				
 		for (Triple t : triplestoAdd) {
-			tmodel.getGraph().delete(t);		    
+		//	tmodel.getGraph().delete(t);		    
 		    itmodel.getGraph().add(t);
 		}
 		
 		try {				
-			itmodel.write(new FileOutputStream(main.initialtarget, true),"NT");
-			if (tmodel.getGraph().size() == 0 )
-				System.out.println("Finished for target...........");
+			itmodel.write(new FileOutputStream(main.initialtarget),"NT");
+			//if (tmodel.getGraph().size() == 0 )
+				//System.out.println("Finished for target...........");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -251,7 +251,7 @@ public class conflictsFinder {
 		}
 		
 		try {				
-			ntmodel.write(new FileOutputStream(main.newTarget, true),"NT");
+			ntmodel.write(new FileOutputStream(main.newTarget),"NT");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -281,13 +281,13 @@ public class conflictsFinder {
 				System.out.println("Total triples after deletion " + model.getGraph().size());
 
 				// After deletion
-			/*	results = GraphUtil.findAll(model.getGraph());
+				results = GraphUtil.findAll(model.getGraph());
 				while (results.hasNext()) {
 					System.out.println(results.next());
 				}
-	*/
+	
 				try {				
-					model.write(new FileOutputStream(filename, true),"NT");
+					model.write(new FileOutputStream(filename),"NT");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
