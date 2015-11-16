@@ -1,8 +1,6 @@
 package Co_Evolution_Manager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class main {
@@ -14,31 +12,56 @@ public class main {
 	static String targetAdditionsChangeset;
 	static String targetDeletionsChangeset;
 	
-	public static void main(String[] args){
-		
-		setinitialtarget("t.nt");
-		setnewtarget("newtarget1m1.nt");
-		
-		setsourceAdditionsChangeset("sa.nt");
-		setsourceDeletionsChangeset("sd.nt");
-		
-		settargetAdditionsChangeset("ta.nt");
-		settargetDeletionsChangeset("td.nt");
-		
-		try {
-			File nt = new File(newTarget);
-			if(!nt.exists()) 
-			    nt.createNewFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		chooseStrategy.setStrategy("syncsourceNkeeplocalBnotconflicts"); 
-		chooseStrategy.applyStrategy();
-		
-		}
-	
+	   public static void main (String[] args) {
+		   
+			setinitialtarget("t.nt");
+			setnewtarget("newtarget.nt");
+			
+			setsourceAdditionsChangeset("sa.nt");
+			setsourceDeletionsChangeset("sd.nt");
+			
+			settargetAdditionsChangeset("ta.nt");
+			settargetDeletionsChangeset("td.nt");
+			
+			try {
+				File nt = new File(newTarget);
+				if(!nt.exists()) 
+				    nt.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			//Conflict_Handler.functionforPredicate.select();
+			chooseStrategy.setStrategy("syncsourceNkeeplocalBnotconflicts"); 
+			//chooseStrategy.setStrategy("syncsourceNkeeplocalWresolvedconflicts");			
+			//chooseStrategy.setStrategy("syncsourceNignorelocal");
+
+			//chooseStrategy.setStrategy("nsyncsourceBkeeplocal");
+			//chooseStrategy.setStrategy("nsyncsourceNignorelocal");
+			chooseStrategy.applyStrategy ();
+			emptyResources ();
+	   }
+	   
 	//				Helper functions
+	public static void emptyResources () {
+		try {
+			File f = new File (initialtarget);
+		    f.delete();
+
+		    f = new File (sourceAdditionsChangeset);
+		    f.delete();
+		    
+		    f = new File (sourceDeletionsChangeset);
+		    f.delete();
+		    
+		    f = new File (targetAdditionsChangeset);
+		    f.delete();
+			
+		    f = new File (targetDeletionsChangeset);
+		    f.delete();
+    	} catch(Exception e){  		
+    		e.printStackTrace();
+    	}
+	}
 	public static void setinitialtarget(String s){
 		initialtarget = s;
 	}

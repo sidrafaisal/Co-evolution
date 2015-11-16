@@ -1,0 +1,2 @@
+<http://dbpedia.org/resource/Cristiano_Ronaldo> <http://dbpedia.org/property/goals> "16"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Rio_Ferdinand> <http://dbpedia.org/property/goals> "6"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .

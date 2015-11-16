@@ -44,20 +44,26 @@ public class chooseStrategy {
 	
 	//Ti+1 = delta (Si) + Ti	
 	public static void syncsourceNignorelocal() {
+		
 		deleteTriples (main.initialtarget, main.sourceDeletionsChangeset, main.initialtarget);
 		
 		String [] inputfilename = {main.initialtarget, main.sourceAdditionsChangeset};
 		writeTriples (inputfilename, main.newTarget);	
+		
 	}
 	
 	//Ti+1 = delta (Si) + delta (Ti) + Ti - X
 	public static void syncsourceNkeeplocalBnotconflicts(){
+		
 		conflictsFinder.identifyConflicts(false);
+		
 	}
 	
 	//Ti+1 = delta (Si) + delta (Ti) + Ti - X + NGT + ERT
 	public static void syncsourceNkeeplocalWresolvedconflicts(){
+		
 		conflictsFinder.identifyConflicts(true);
+		
 	}
 	
 	//Ti+1 = delta (Ti) + Ti
@@ -67,17 +73,20 @@ public class chooseStrategy {
 		
 		String [] inputfilename = {main.initialtarget, main.targetAdditionsChangeset};
 		writeTriples (inputfilename, main.newTarget);			
+		
 	}
 	
 	//Ti+1 = Ti
 	public static void nsyncsourceNignorelocal(){
 		
 		String [] inputfilename = {main.initialtarget};
-		writeTriples (inputfilename, main.newTarget);		
+		writeTriples (inputfilename, main.newTarget);	
+		
 	}
 	
 	// delete the triples for final output
 	public static void deleteTriples (String initialtarget, String targetDeletionsChangeset, String outputfilename){
+		
 		Model imodel = FileManager.get().loadModel(initialtarget,"NT");		
 		Model tmodel = FileManager.get().loadModel(targetDeletionsChangeset,"NT");		
 		
@@ -89,15 +98,13 @@ public class chooseStrategy {
 		    Property  predicate = stmt.getPredicate();   // get the predicate
 		    RDFNode   object    = stmt.getObject();      // get the object
 		  */  
-		    imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial
-		    
+		    imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial		    
 					    
 			/*ExtendedIterator<Triple> results = imodel.getGraph().find(subject.asNode(), predicate.asNode(), object.asNode()); 
 			while (results.hasNext()) {
 				Triple t = results.next();
 				imodel.getGraph().delete(t);
 			}*/
-		System.out.println("Total triples after deletion " + imodel.getGraph().size());
 		}
 		
 		try {				
@@ -112,7 +119,6 @@ public class chooseStrategy {
 	// write in final output file
 	public static void writeTriples(String [] inputfilename, String outputfilename) {
 
-	//	Model omodel = FileManager.get().loadModel(outputfilename,"NT");
 		for (String input : inputfilename) {		
 		Model model = FileManager.get().loadModel(input,"NT");
 		try {				
@@ -122,7 +128,6 @@ public class chooseStrategy {
 		}
 		model.close();
 		}
-	//	omodel.close();
 }
 	
 	public String getStrategy(){
