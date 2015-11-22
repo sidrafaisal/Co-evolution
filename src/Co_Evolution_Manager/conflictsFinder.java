@@ -1,6 +1,7 @@
 package Co_Evolution_Manager;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.FileManager;
@@ -51,7 +53,7 @@ public class conflictsFinder {
 		    Resource  subject   = stmt.getSubject();     // get the subject
 		    Property  predicate = stmt.getPredicate();   // get the predicate
 		    RDFNode   object    = stmt.getObject();      // get the object
-		    Conflict_Handler.functionforPredicate.set(predicate.toString(), "any");
+		    Conflict_Handler.functionforPredicate.set(predicate.toString(), "stdDev");
 		
 		    String functionforPredicate = Conflict_Handler.functionforPredicate.get(predicate.toString()); // temporaily setting from here
 		   // System.out.println(functionforPredicate);
@@ -94,7 +96,13 @@ public class conflictsFinder {
 					if(object.toString().equals(t.getObject().toString())){		//same values			
 						omodel.add(stmt);
 					} else if (resolve) {										//different values
-						String [] args = {object.toString(), t.getObject().toString()};
+							String val1, val2;
+							if (object.isLiteral())
+								val1 = object.asLiteral().getValue().toString();
+							else
+								val1 = object.toString();
+							val 2 = t.getObject().toString();
+							String [] args = {val1, val2};
 						String rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args);
 						
 						omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv)));
@@ -118,10 +126,19 @@ public class conflictsFinder {
 						if(object.toString().equals(t.getObject().toString())){		//same values			
 							omodel.add(stmt);
 						} else if (resolve) {														//different values
-							String [] args = {object.toString(), t.getObject().toString()};
-							String rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args);
-							
-							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv)));
+							String val1, val2;
+							String type, rv = "";
+
+						//	if (object.isLiteral())
+						//	{	
+							String [] args = { object.asLiteral().getValue().toString(),
+								t.getObject().getLiteralValue().toString() };								
+								type = getType(object.asLiteral().getDatatypeURI());
+						//	} else
+						//		val1 = object.toString();
+
+							rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args, type);
+							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
 							System.out.println("add after resolve...........");			
 						}
 					}					
@@ -137,10 +154,18 @@ public class conflictsFinder {
 						if(object.toString().equals(t.getObject().toString())){		//same values			
 							omodel.add(stmt);
 						} else if (resolve) {										//different values (directly use preference or resolved?)
-							String [] args = {object.toString(), t.getObject().toString()};
-							String rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args);
-							
-							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv)));
+							String type, rv = "";
+
+						//	if (object.isLiteral())
+						//	{	
+							String [] args = { object.asLiteral().getValue().toString(),
+								t.getObject().getLiteralValue().toString() };								
+								type = getType(object.asLiteral().getDatatypeURI());
+						//	} else
+						//		val1 = object.toString();
+
+							rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args, type);
+							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
 							System.out.println("add after resolve...........");			
 						}
 					}
@@ -156,10 +181,18 @@ public class conflictsFinder {
 						if(object.toString().equals(t.getObject().toString())){		//same values			
 							omodel.add(stmt);
 						} else if (resolve) {										//different values
-							String [] args = {object.toString(), t.getObject().toString()};
-							String rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args);
+							String type, rv = "";
 
-							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv)));
+						//	if (object.isLiteral())
+						//	{	
+							String [] args = { object.asLiteral().getValue().toString(),
+								t.getObject().getLiteralValue().toString() };								
+								type = getType(object.asLiteral().getDatatypeURI());
+						//	} else
+						//		val1 = object.toString();
+
+							rv = Conflict_Handler.resolutionFunctions.apply(functionforPredicate, args, type);
+							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
 							System.out.println("add after resolve...........");		
 						}
 					}
@@ -182,6 +215,17 @@ public class conflictsFinder {
 		
 	}	
 	
+	/////////////////////////
+	public static String getType(String type) {
+		
+		int index = type.indexOf("#");
+		if (index == -1)
+			index = type.indexOf(":");
+		index = index + 1;
+		
+		int size = type.length();
+	    return type.substring(index, size);
+}
 	/////////////////////////////////////////////////////Step2
 	/*Find conflicts for source deletions changeset: Pick each triple s1,p1,o1 from source deletion changeset 
 	and check for s1,p1,o2 in target changesets and initial target*/	

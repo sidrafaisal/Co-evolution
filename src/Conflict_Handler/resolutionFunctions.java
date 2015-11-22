@@ -1,7 +1,13 @@
 package Conflict_Handler;
 
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+
+import Conflict_Handler.gFunctions;
+import Conflict_Handler.mathFunctions;
 
 public class resolutionFunctions {
 	
@@ -9,238 +15,143 @@ public class resolutionFunctions {
 			"shortest", "longest", "concatenation", "bestSource", "globalVote", "latest", "threshold", "best", "topN", "chooseDepending", 
 			"chooseCorresponding", "mostComplete"};	
 		
-		public static String apply (String function, String [] args){
+		public static String apply (String function, String [] args, String type){
+
+			String val = "";	
+
+			if(function.equals("sum") || function.equals("average") || function.equals("max") || function.equals("min") ||
+					function.equals("stdDev") || function.equals("variance") || function.equals("median")) {
+
+				if (type.equals("int") || type.equals("unsignedShort")) 
+				{
+					String s = functions (function, args, type); 
+					Double d = Double.parseDouble(s);
+					val = d.intValue() + "";	
+
+				} else if (type.equals("unsignedLong") || type.equals("positiveInteger") || type.equals("nonPositiveInteger") || 
+						type.equals("nonNegativeInteger") || type.equals("negativeInteger") || type.equals("integer")) {
+
+					val = mathFunctions.mathforBI (function, args);
+
+				} else if (type.equals("float")) {
+
+					String s = functions (function, args, type); 
+					Double d = Double.parseDouble(s);
+					val = d.floatValue() + "";
+
+				} else if (type.equals("unsignedByte") || type.equals("short")) {
+
+					String s = functions (function, args, type); 
+					Double d = Double.parseDouble(s);
+					val = d.shortValue() + "";
+
+				} else if (type.equals("unsignedInt") || type.equals("long")) {
+
+					String s = functions (function, args, type); 
+					Double d = Double.parseDouble(s);
+					val = d.longValue() + "";
+
+				}/*else if (type.equals("anyURI") || type.equals("anySimpleType") || type.equals("ENTITIES") || type.equals("ENTITY") || 
+					type.equals("token") || type.equals("string") || type.equals("normalizedString") || type.equals("NMTOKENS") || 
+					type.equals("NMTOKEN") || type.equals("NCName") || type.equals("Name") || type.equals("IDREFS") || 
+					type.equals("ID") || type.equals("IDREF") || type.equals("language")){
+				   val = rv;
+			} else if (type.equals("double")) {
+				   val = rv;
+			} */
+			} else {
+
+				val = functions (function, args, type); 
+			}		
+			return val;	
+		}
+
+				
+		public static String functions (String function, String [] args, String type){
 			switch (function) {
 				case "sum": {
-					Double d = sum(args);
+					Double d = mathFunctions.sum(args);
 					return (String.valueOf(d));
 					}
 				
 				case "average":{
-					Double d = average(args);
+					Double d = mathFunctions.average(args);
 					return (String.valueOf(d));
 					}
 				
 				case "median": {
-					Double d = median(args);
+					Double d = mathFunctions.median(args);
 					return (String.valueOf(d));
 					}
 				
 				case "variance": {
-					Double d = variance(args);
+					Double d = mathFunctions.variance(args);
 					return (String.valueOf(d));
 					}
 				
 				case "stdDev": {
-					Double d = stdDev(args);
+					Double d = mathFunctions.stdDev(args);
 					return (String.valueOf(d));
 					}
 				
 				case "max": {
-					Double d = max(args);
+					Double d = mathFunctions.max(args);
 					return (String.valueOf(d));
 					}
 				
 				case "min": {
-					Double d = min(args);
+					Double d = mathFunctions.min(args);
 					return (String.valueOf(d));
 					}
 				
 				case "any":
-					return any(args);
+					return gFunctions.any(args);
 				
 				case "first":
-					return first(args); 
+					return gFunctions.first(args); 
 				
 				case "shortest":
-					return shortest(args);
+					return gFunctions.shortest(args);
 
 				case "longest":
-					return longest(args);
+					return gFunctions.longest(args);
 				
 				case "concatenation":
-					return concatenation(args);	
+					return gFunctions.concatenation(args);	
 				
 				case "bestSource":
-					return bestSource(args);
+					return gFunctions.bestSource(args);
 				
 				case "globalVote":
-					return globalVote(args);
+					return gFunctions.globalVote(args);
 				
 				case "latest":
-					return latest(args);
+					return gFunctions.latest(args);
 				
 				case "threshold":
-					return threshold(args);
+					return gFunctions.threshold(args);
 				
 				case "best":
-					return best(args);
+					return gFunctions.best(args);
 				
 				case "topN":
-					return topN(args);
+					return gFunctions.topN(args);
 				
 				case "chooseDepending":
-					return chooseDepending(args);
+					return gFunctions.chooseDepending(args);
 				
 				case "chooseCorresponding":
-					return chooseCorresponding(args);
+					return gFunctions.chooseCorresponding(args);
 				
 				case "mostComplete":
-					return mostComplete(args);
+					return gFunctions.mostComplete(args);
 				
 				default:
 					return " ";
 			}
 		}
 	
-/*								Resolution Functions				*/	
+
 		
-		public static String bestSource (String[] args) {
-
-			return args[0];
-		}	
-		public static String globalVote (String[] args) {
-
-			return args[0];
-		}	
-		public static String latest (String[] args) {
-
-			return args[0];
-		}	
-		public static String threshold (String[] args) {
-
-			return args[0];
-		}	
-		public static String best (String[] args) {
-
-			return args[0];
-		}	
-		public static String topN (String[] args) {
-		
-			return args[0];
-		}	
-		public static String chooseDepending (String[] args) {
-
-			return args[0];
-		}	
-		public static String chooseCorresponding (String[] args) {
-
-			return args[0];
-		}	
-		public static String mostComplete (String[] args) {
-
-			return args[0];
-		}	
-	//requires metadata as well
-		
-	//requires only data	
-		public static String first (String[] args) {
-			Arrays.sort(args);
-			return args[0];
-		}	
-
-		public static String shortest (String[] args) {		
-		    String shortest = any(args);
-
-		    for (String value : args) {
-		        if (value.length() < shortest.length()) 
-		            shortest = value;
-		    }
-		    return shortest;    
-		}
-		
-		public static String longest (String[] args) {		
-		    String longest = any(args);
-
-		    for (String value : args) {
-		        if (value.length() > longest.length()) 
-		            longest = value;
-		    }
-		    return longest;    
-		}
-		
-		public static String any (String[] args) {
-			int randomValue = new Random().nextInt(args.length);
-		    return args[randomValue];		
-		}
-
-		public static String concatenation (String[] args) {
-			String concatenate = args[0];
-			for (int i = 1; i < args.length; i++)
-			{
-				concatenate += ", ";
-				concatenate += args[1];			
-			}
-			return concatenate;
-		}
-		
-	//Mathematical functions
-		public static double max (String[] args) {
-			double max = Double.MIN_VALUE;
-			for (String input : args)
-			{
-				double value = Double.parseDouble(input); 
-				if( value > max) 
-			         max = value;
-			}
-			return max;
-		}
-		
-			public static double min (String[] args) {
-				double min = Double.MAX_VALUE;
-				for (String input : args)
-				{
-					double value = Double.parseDouble(input); 
-					if(value < min) 
-				         min = value;
-				}
-				return min;
-			}
-			
-			public static double sum (String[] args) {
-				double sum = 0;
-				for (String input : args)
-					sum += Double.parseDouble(input);
-				return sum;
-			}
-
-			public static double average (String[] args) {
-				double average = 0;
-				average = sum (args) / args.length;
-				return average;
-			}
-			
-			public static double median (String[] args) {	
-				int size = args.length;
-				double input [] = new double [size];
-				double median = 0;
-				
-				for (int i = 0; i < size; i++)
-					input [i] = Double.parseDouble(args[i]);		
-				
-				Arrays.sort(input);
-				
-				if (size % 2 == 0)
-					median = ((double)input[size/2] + (double)input[size/2 - 1])/2;
-				else
-					median = (double) input[size/2];
-				return median;
-			}
-			
-			public static double variance(String[] args) {
-				int size = args.length;
-				double input [] = new double [size];			
-				for (int i = 0; i < size; i++)
-					input [i] = Double.parseDouble(args[i]);	
-				
-			    double avg = average(args);
-			    double variance = 0;
-			    for(double value : input)
-			    	variance += (avg-value)*(avg-value);
-			    return variance/size;
-			}
-
-			public static double stdDev(String[] args) {
-			    return Math.sqrt(variance(args));
-			}
+	
 }

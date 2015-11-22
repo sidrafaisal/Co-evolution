@@ -2,6 +2,13 @@ package Co_Evolution_Manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
 
 public class main {
 	
@@ -12,8 +19,9 @@ public class main {
 	static String targetAdditionsChangeset;
 	static String targetDeletionsChangeset;
 	
-	   public static void main (String[] args) {
+	   public static void main (String[] args) {	   
 		   
+			// set the files to be used by other classes						
 			setinitialtarget("t.nt");
 			setnewtarget("newtarget.nt");
 			
@@ -31,8 +39,8 @@ public class main {
 				e.printStackTrace();
 			}
 			//Conflict_Handler.functionforPredicate.select();
-			chooseStrategy.setStrategy("syncsourceNkeeplocalBnotconflicts"); 
-			//chooseStrategy.setStrategy("syncsourceNkeeplocalWresolvedconflicts");			
+			//chooseStrategy.setStrategy("syncsourceNkeeplocalBnotconflicts"); 
+			chooseStrategy.setStrategy("syncsourceNkeeplocalWresolvedconflicts");			
 			//chooseStrategy.setStrategy("syncsourceNignorelocal");
 
 			//chooseStrategy.setStrategy("nsyncsourceBkeeplocal");
@@ -62,6 +70,7 @@ public class main {
     		e.printStackTrace();
     	}
 	}
+	
 	public static void setinitialtarget(String s){
 		initialtarget = s;
 	}
