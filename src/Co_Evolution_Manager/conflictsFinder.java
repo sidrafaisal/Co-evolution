@@ -1,7 +1,6 @@
 package Co_Evolution_Manager;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.FileManager;
@@ -53,15 +51,14 @@ public class conflictsFinder {
 		    Resource  subject   = stmt.getSubject();     // get the subject
 		    Property  predicate = stmt.getPredicate();   // get the predicate
 		    RDFNode   object    = stmt.getObject();      // get the object
-		    Conflict_Handler.functionforPredicate.set(predicate.toString(), "stdDev");
-		
+
 		    String functionforPredicate = Conflict_Handler.functionforPredicate.get(predicate.toString()); // temporaily setting from here
-		   // System.out.println(functionforPredicate);
+
 		   // printTriple ("main.sourceAdditionsChangeset", subject, predicate, object);
 
 			List<Triple> conflictingTriplesDeletionSource = findCorrespondingTriples(main.sourceDeletionsChangeset, subject, predicate, Node.ANY) ;
 			
-			List<Triple> conflictingTriplesTarget = findCorrespondingTriples(main.initialtarget, subject, predicate, Node.ANY) ;
+			List<Triple> conflictingTriplesTarget = findCorrespondingTriples(main.initialTarget, subject, predicate, Node.ANY) ;
 			
 			List<Triple> conflictingTriplesAdditionTarget = findCorrespondingTriples(main.targetAdditionsChangeset, subject, predicate, Node.ANY) ;
 			
@@ -125,8 +122,7 @@ public class conflictsFinder {
 						Triple t = conflictingTriplesAdditionTarget.get(i);
 						if(object.toString().equals(t.getObject().toString())){		//same values			
 							omodel.add(stmt);
-						} else if (resolve) {														//different values
-							String val1, val2;
+						} else if (resolve) {	
 							String type, rv = "";
 
 						//	if (object.isLiteral())
@@ -207,7 +203,7 @@ public class conflictsFinder {
 		} 
 
 		try {				
-			omodel.write(new FileOutputStream(main.newTarget),"NT");
+			omodel.write(new FileOutputStream(main.newTarget), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -246,7 +242,7 @@ public class conflictsFinder {
 		    
 		    printTriple ("main.sourceDeletionsChangeset", subject, predicate, object);
 
-			List<Triple> conflictingTriplesTarget = findCorrespondingTriples(main.initialtarget, subject, predicate, Node.ANY) ;
+			List<Triple> conflictingTriplesTarget = findCorrespondingTriples(main.initialTarget, subject, predicate, Node.ANY) ;
 		
 			List<Triple> conflictingTriplesAdditionTarget = findCorrespondingTriples(main.targetAdditionsChangeset, subject, predicate, Node.ANY) ;
 			
@@ -277,7 +273,7 @@ public class conflictsFinder {
 		} 
 
 		try {				
-			omodel.write(new FileOutputStream(main.newTarget),"NT");
+			omodel.write(new FileOutputStream(main.newTarget), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -292,7 +288,7 @@ public class conflictsFinder {
 	public static void applyDelTarget(){
 		
 		Model tmodel = FileManager.get().loadModel(main.targetDeletionsChangeset);
-		Model itmodel = FileManager.get().loadModel(main.initialtarget);			
+		Model itmodel = FileManager.get().loadModel(main.initialTarget);			
 		List<Triple> triplestoDelete = new ArrayList<Triple>();
 			
 		StmtIterator iter = tmodel.listStatements();
@@ -306,7 +302,7 @@ public class conflictsFinder {
 		    itmodel.getGraph().delete(t);
 		
 		try {				
-			itmodel.write(new FileOutputStream(main.initialtarget),"NT");
+			itmodel.write(new FileOutputStream(main.initialTarget), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -320,7 +316,7 @@ public class conflictsFinder {
 	public static void applyAddTarget(){
 		
 		Model tmodel = FileManager.get().loadModel(main.targetAdditionsChangeset);
-		Model itmodel = FileManager.get().loadModel(main.initialtarget);			
+		Model itmodel = FileManager.get().loadModel(main.initialTarget);			
 		List<Triple> triplestoAdd = new ArrayList<Triple>();
 			
 		StmtIterator iter = tmodel.listStatements();
@@ -334,7 +330,7 @@ public class conflictsFinder {
 		    itmodel.getGraph().add(t);
 
 		try {				
-			itmodel.write(new FileOutputStream(main.initialtarget),"NT");
+			itmodel.write(new FileOutputStream(main.initialTarget), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -348,7 +344,7 @@ public class conflictsFinder {
 	public static void applyInitialTarget(){
 		
 		Model ntmodel = FileManager.get().loadModel(main.newTarget);
-		Model itmodel = FileManager.get().loadModel(main.initialtarget);			
+		Model itmodel = FileManager.get().loadModel(main.initialTarget);			
 			
 		StmtIterator iter = itmodel.listStatements();
 		
@@ -358,7 +354,7 @@ public class conflictsFinder {
 		}
 		
 		try {				
-			ntmodel.write(new FileOutputStream(main.newTarget),"NT");
+			ntmodel.write(new FileOutputStream(main.newTarget), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -372,7 +368,7 @@ public class conflictsFinder {
 	
 		public static List<Triple> findCorrespondingTriples(String filename, Resource subject, Property predicate, Node object) {
 
-				Model model = FileManager.get().loadModel(filename,"NT");
+				Model model = FileManager.get().loadModel(filename, main.fileSyntax);
 				
 				List<Triple> conflictingTriples = new ArrayList<Triple>();
 				
@@ -392,7 +388,7 @@ public class conflictsFinder {
 				}*/
 	
 				try {				
-					model.write(new FileOutputStream(filename),"NT");
+					model.write(new FileOutputStream(filename), main.fileSyntax);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}

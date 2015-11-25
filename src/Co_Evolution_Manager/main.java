@@ -2,28 +2,23 @@ package Co_Evolution_Manager;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResourceFactory;
 
 public class main {
 	
-	static String initialtarget;
+	static String initialTarget;
 	static String newTarget;
 	static String sourceAdditionsChangeset;
 	static String sourceDeletionsChangeset; 
 	static String targetAdditionsChangeset;
 	static String targetDeletionsChangeset;
+	static String fileSyntax;
 	
 	   public static void main (String[] args) {	   
-		   
+
 			// set the files to be used by other classes						
-			setinitialtarget("t.nt");
-			setnewtarget("newtarget.nt");
+		   setfileSyntax("NT");
+		   setinitialTarget("t.nt");
+			setnewTarget("newtarget.nt");
 			
 			setsourceAdditionsChangeset("sa.nt");
 			setsourceDeletionsChangeset("sd.nt");
@@ -38,13 +33,14 @@ public class main {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
 			//Conflict_Handler.functionforPredicate.select();
 			//chooseStrategy.setStrategy("syncsourceNkeeplocalBnotconflicts"); 
 			chooseStrategy.setStrategy("syncsourceNkeeplocalWresolvedconflicts");			
-			//chooseStrategy.setStrategy("syncsourceNignorelocal");
+	//	chooseStrategy.setStrategy("syncsourceNignorelocal");
 
-			//chooseStrategy.setStrategy("nsyncsourceBkeeplocal");
-			//chooseStrategy.setStrategy("nsyncsourceNignorelocal");
+		//	chooseStrategy.setStrategy("nsyncsourceBkeeplocal");
+		//	chooseStrategy.setStrategy("nsyncsourceNignorelocal");
 			chooseStrategy.applyStrategy ();
 			emptyResources ();
 	   }
@@ -52,7 +48,7 @@ public class main {
 	//				Helper functions
 	public static void emptyResources () {
 		try {
-			File f = new File (initialtarget);
+			File f = new File (initialTarget);
 		    f.delete();
 
 		    f = new File (sourceAdditionsChangeset);
@@ -70,12 +66,16 @@ public class main {
     		e.printStackTrace();
     	}
 	}
-	
-	public static void setinitialtarget(String s){
-		initialtarget = s;
+
+	public static void setfileSyntax(String s){
+		fileSyntax = s;
 	}
 	
-	public static void setnewtarget(String s){
+	public static void setinitialTarget(String s){
+		initialTarget = s;
+	}
+	
+	public static void setnewTarget(String s){
 		newTarget = s;
 	}
 	

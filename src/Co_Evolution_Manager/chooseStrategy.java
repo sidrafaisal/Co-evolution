@@ -3,15 +3,12 @@ package Co_Evolution_Manager;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.util.FileManager;
-import org.apache.jena.util.iterator.ExtendedIterator;
 
 public class chooseStrategy {
 	
@@ -30,9 +27,10 @@ public class chooseStrategy {
 		case "syncsourceNkeeplocalBnotconflicts":
 			syncsourceNkeeplocalBnotconflicts();
 			break;
-		case "syncsourceNkeeplocalWresolvedconflicts":
+		case "syncsourceNkeeplocalWresolvedconflicts": {
+			Conflict_Handler.functionforPredicate.select();
 			syncsourceNkeeplocalWresolvedconflicts();	
-			break;
+			break; }
 		case "nsyncsourceBkeeplocal":
 			nsyncsourceBkeeplocal();
 			break;
@@ -45,10 +43,11 @@ public class chooseStrategy {
 	//Ti+1 = delta (Si) + Ti	
 	public static void syncsourceNignorelocal() {
 		
-		deleteTriples (main.initialtarget, main.sourceDeletionsChangeset, main.initialtarget);
+		deleteTriples (main.initialTarget, main.sourceDeletionsChangeset, main.initialTarget);
 		
-		String [] inputfilename = {main.initialtarget, main.sourceAdditionsChangeset};
-		writeTriples (inputfilename, main.newTarget);	
+		String [] inputfilename = {main.initialTarget, main.sourceAdditionsChangeset};
+		writeTriples (main.initialTarget, main.newTarget);			
+		writeTriples (main.sourceAdditionsChangeset, main.newTarget);		
 		
 	}
 	
@@ -69,46 +68,38 @@ public class chooseStrategy {
 	//Ti+1 = delta (Ti) + Ti
 	public static void nsyncsourceBkeeplocal(){
 		
-		deleteTriples (main.initialtarget, main.targetDeletionsChangeset, main.initialtarget);
+		deleteTriples (main.initialTarget, main.targetDeletionsChangeset, main.initialTarget);
 		
-		String [] inputfilename = {main.initialtarget, main.targetAdditionsChangeset};
-		writeTriples (inputfilename, main.newTarget);			
-		
+		String [] inputfilename = {main.initialTarget, main.targetAdditionsChangeset};
+		writeTriples (main.initialTarget, main.newTarget);			
+		writeTriples (main.targetAdditionsChangeset, main.newTarget);		
 	}
 	
 	//Ti+1 = Ti
 	public static void nsyncsourceNignorelocal(){
 		
-		String [] inputfilename = {main.initialtarget};
-		writeTriples (inputfilename, main.newTarget);	
+		String [] inputfilename = {main.initialTarget};
+		writeTriples (main.initialTarget, main.newTarget);	
 		
 	}
 	
 	// delete the triples for final output
 	public static void deleteTriples (String initialtarget, String targetDeletionsChangeset, String outputfilename){
 		
-		Model imodel = FileManager.get().loadModel(initialtarget,"NT");		
-		Model tmodel = FileManager.get().loadModel(targetDeletionsChangeset,"NT");		
+		Model imodel = //RDFDataMgr.loadModel(initialtarget);
+				FileManager.get().loadModel(initialtarget);		
+		Model tmodel = //RDFDataMgr.loadModel(targetDeletionsChangeset);
+				FileManager.get().loadModel(targetDeletionsChangeset);		
 		
 		StmtIterator iter = tmodel.listStatements();
 		
 		while (iter.hasNext()) {
-		    Statement stmt      = iter.nextStatement();  // get next statement
-		/*    Resource  subject   = stmt.getSubject();     // get the subject
-		    Property  predicate = stmt.getPredicate();   // get the predicate
-		    RDFNode   object    = stmt.getObject();      // get the object
-		  */  
-		    imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial		    
-					    
-			/*ExtendedIterator<Triple> results = imodel.getGraph().find(subject.asNode(), predicate.asNode(), object.asNode()); 
-			while (results.hasNext()) {
-				Triple t = results.next();
-				imodel.getGraph().delete(t);
-			}*/
+		    Statement stmt      = iter.nextStatement();  // get next statement 
+		    imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial		    					   
 		}
 		
-		try {				
-			imodel.write(new FileOutputStream(outputfilename),"NT");
+		try {	
+			imodel.write(new FileOutputStream(outputfilename), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -117,17 +108,19 @@ public class chooseStrategy {
 	}
 	
 	// write in final output file
-	public static void writeTriples(String [] inputfilename, String outputfilename) {
-
-		for (String input : inputfilename) {		
-		Model model = FileManager.get().loadModel(input,"NT");
+	public static void writeTriples(String inputfilename, String outputfilename) {
+		//Model model =  ModelFactory.createDefaultModel();;
+		//for (String input : inputfilename) {		
+			//RDFDataMgr.loadModel(input);
+		Model model = //RDFDataMgr.loadModel(inputfilename);
+					FileManager.get().loadModel(inputfilename);
 		try {				
-			model.write(new FileOutputStream(outputfilename, true),"NT");
+			model.write(new FileOutputStream(outputfilename, true), main.fileSyntax);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 		model.close();
-		}
+		//}
 }
 	
 	public String getStrategy(){
