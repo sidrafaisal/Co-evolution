@@ -1,2 +1,4 @@
 # started 2015-03-26T23:00:52Z
 <http://dbpedia.org/resource/Rio_Ferdinand> <http://dbpedia.org/property/goals> "36"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/t> <http://dbpedia.org/property/goals> "36"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/p> <http://dbpedia.org/property/goals> "36"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .

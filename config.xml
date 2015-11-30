@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><Co-evolution><strategy id="syncsourceNkeeplocalWresolvedconflicts"><sourceAddDelta>sa.nt</sourceAddDelta><SourceDelDelta>sd.nt</SourceDelDelta><TargetAddDelta>ta.nt</TargetAddDelta><TargetDelDelta>td.nt</TargetDelDelta><InitialTarget>t.nt</InitialTarget></strategy></Co-evolution>

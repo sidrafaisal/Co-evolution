@@ -1,9 +1,59 @@
-package Conflict_Handler;
+package Conflict_Resolver;
 
 import java.util.Arrays;
 import java.util.Random;
 
-public class gFunctions {
+public class F_Generic {
+	
+	public static String Compute (String function, String [] args){
+		switch (function) {
+			
+			case "any":
+				return any(args);
+			
+			case "first":
+				return first(args); 
+			
+			case "shortest":
+				return shortest(args);
+
+			case "longest":
+				return longest(args);
+			
+			case "concatenation":
+				return concatenation(args);	
+			
+			case "bestSource":
+				return bestSource(args);
+			
+			case "globalVote":
+				return globalVote(args);
+			
+			case "latest":
+				return latest(args);
+			
+			case "threshold":
+				return threshold(args);
+			
+			case "best":
+				return best(args);
+			
+			case "topN":
+				return topN(args);
+			
+			case "chooseDepending":
+				return chooseDepending(args);
+			
+			case "chooseCorresponding":
+				return chooseCorresponding(args);
+			
+			case "mostComplete":
+				return mostComplete(args);
+			
+			default:
+				return " ";
+		}
+	}
 	/*								Resolution Functions				*/	
 	
 	public static String bestSource (String[] args) {

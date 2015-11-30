@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<auto_FunctionSelector numberofIterations="1">
+    <Predicate name="http://dbpedia.org/property/goals">
+        <Function name="sum" score="0.0"/>
+        <Function name="average" score="0.0"/>
+        <Function name="median" score="0.0"/>
+        <Function name="variance" score="0.5"/>
+        <Function name="stdDev" score="0.0"/>
+        <Function name="max" score="0.125"/>
+        <Function name="min" score="0.0"/>
+        <Function name="any" score="0.0"/>
+        <Function name="first" score="0.0"/>
+        <Function name="shortest" score="0.0"/>
+        <Function name="longest" score="0.0"/>
+        <Function name="concatenation" score="0.0"/>
+        <Function name="bestSource" score="0.0"/>
+        <Function name="globalVote" score="0.0"/>
+        <Function name="latest" score="0.0"/>
+        <Function name="threshold" score="0.0"/>
+        <Function name="best" score="0.0"/>
+        <Function name="topN" score="0.0"/>
+        <Function name="chooseDepending" score="0.0"/>
+        <Function name="chooseCorresponding" score="0.0"/>
+        <Function name="mostComplete" score="0.0"/>
+    </Predicate>
+    <Predicate name="http://www.w3.org/1999/02/22-rdf-syntax-ns#type">
+        <Function name="sum" score="0.0"/>
+        <Function name="average" score="0.0"/>
+        <Function name="median" score="0.5"/>
+        <Function name="variance" score="0.0"/>
+        <Function name="stdDev" score="0.0"/>
+        <Function name="max" score="0.0"/>
+        <Function name="min" score="0.0"/>
+        <Function name="any" score="0.125"/>
+        <Function name="first" score="0.0"/>
+        <Function name="shortest" score="0.0"/>
+        <Function name="longest" score="0.0"/>
+        <Function name="concatenation" score="0.0"/>
+        <Function name="bestSource" score="0.0"/>
+        <Function name="globalVote" score="0.0"/>
+        <Function name="latest" score="0.0"/>
+        <Function name="threshold" score="0.0"/>
+        <Function name="best" score="0.0"/>
+        <Function name="topN" score="0.0"/>
+        <Function name="chooseDepending" score="0.0"/>
+        <Function name="chooseCorresponding" score="0.0"/>
+        <Function name="mostComplete" score="0.0"/>
+    </Predicate>
+</auto_FunctionSelector>
