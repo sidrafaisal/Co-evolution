@@ -4,16 +4,16 @@
         <Function name="sum" score="0.0"/>
         <Function name="average" score="0.0"/>
         <Function name="median" score="0.0"/>
-        <Function name="variance" score="0.5"/>
+        <Function name="variance" score="0.0"/>
         <Function name="stdDev" score="0.0"/>
-        <Function name="max" score="0.125"/>
+        <Function name="max" score="0.0"/>
         <Function name="min" score="0.0"/>
         <Function name="any" score="0.0"/>
         <Function name="first" score="0.0"/>
         <Function name="shortest" score="0.0"/>
         <Function name="longest" score="0.0"/>
         <Function name="concatenation" score="0.0"/>
-        <Function name="bestSource" score="0.0"/>
+        <Function name="bestSource" score="1.0"/>
         <Function name="globalVote" score="0.0"/>
         <Function name="latest" score="0.0"/>
         <Function name="threshold" score="0.0"/>
@@ -26,17 +26,17 @@
     <Predicate name="http://www.w3.org/1999/02/22-rdf-syntax-ns#type">
         <Function name="sum" score="0.0"/>
         <Function name="average" score="0.0"/>
-        <Function name="median" score="0.5"/>
+        <Function name="median" score="0.0"/>
         <Function name="variance" score="0.0"/>
         <Function name="stdDev" score="0.0"/>
         <Function name="max" score="0.0"/>
         <Function name="min" score="0.0"/>
-        <Function name="any" score="0.125"/>
+        <Function name="any" score="0.0"/>
         <Function name="first" score="0.0"/>
         <Function name="shortest" score="0.0"/>
         <Function name="longest" score="0.0"/>
         <Function name="concatenation" score="0.0"/>
-        <Function name="bestSource" score="0.0"/>
+        <Function name="bestSource" score="1.0"/>
         <Function name="globalVote" score="0.0"/>
         <Function name="latest" score="0.0"/>
         <Function name="threshold" score="0.0"/>

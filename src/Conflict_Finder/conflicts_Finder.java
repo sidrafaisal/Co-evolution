@@ -3,9 +3,7 @@ package Conflict_Finder;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -22,11 +20,11 @@ public class conflicts_Finder {
 	
 	static boolean resolve;
 		
-	public static void identifyConflicts(int selector, boolean r){
+	public static void identifyConflicts(boolean r){
 		
 		resolve = r;
 		
-		source_Delta.apply(selector, resolve);		
+		source_Delta.apply(resolve);		
 		applyDelTarget();								//Step 3
 		applyAddTarget();								//Step 4
 		applyInitialTarget();							//Step 5

@@ -24,14 +24,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class manual_Selector {		
-
+	
+	public static Map<String, String> preferedSourceforPredicate  = new HashMap<String, String>();
 	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
+
 	public static String filename = "";
 	
 	public static void select () {
 
 		int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");
-		filename = "Function"+ Co_Evolution_Manager.configure.newTarget.substring(0, pos)+".xml";
+		filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget.substring(0, pos)+".xml";
 		File file = new File(filename);
 
 		if(!file.exists()) 	
@@ -62,12 +64,20 @@ public class manual_Selector {
 				System.out.println("\nEnter a resolution function for this property: "+ line);
 
 				String rf = Co_Evolution_Manager.main.scanner.nextLine();
-
-				set (line, rf);	
+				
 				Element st = doc.createElement("Predicate");
 				rootElement.appendChild(st);
 				st.setAttribute("name", line);					
-				st.setAttribute("function", rf);			
+				st.setAttribute("function", rf);
+				
+				if (rf.equals("bestSource")){
+					System.out.println("\nEnter your first preference: source or target");
+					String prf = Co_Evolution_Manager.main.scanner.nextLine();			
+					st.setAttribute("preference", prf);
+					preferedSourceforPredicate.put(line, prf);
+				}
+				
+				resolutionFunctionforPredicate.put (line, rf);			
 			}
 
 			br.close();
@@ -90,10 +100,8 @@ public class manual_Selector {
 
 	}
 
-	public static void populate(){
-		
+	public static void populate(){		
 		try {
-
 			File fXmlFile = new File(filename);
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -108,10 +116,10 @@ public class manual_Selector {
 					Element p = (Element) pred;
 					String predicate = p.getAttribute("name");
 					String function = p.getAttribute("function");
-	
-					set (predicate, function);
-					System.out.println(predicate+function);
-
+					if (function.equals("bestSource"))
+						preferedSourceforPredicate.put(predicate, p.getAttribute("preference"));
+					
+					resolutionFunctionforPredicate.put(predicate, function);
 				}
 			}
 		} catch (Exception e) {

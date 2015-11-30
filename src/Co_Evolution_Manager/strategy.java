@@ -10,6 +10,7 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.FileManager;
 
 import Conflict_Finder.conflicts_Finder;
+import Conflict_Resolver.resolver;
 
 public class strategy {
 
@@ -52,7 +53,7 @@ public class strategy {
 	//Ti+1 = delta (Si) + delta (Ti) + Ti - X
 	public static void syncsourceNkeeplocalBnotconflicts(){
 
-		conflicts_Finder.identifyConflicts(0, false);
+		conflicts_Finder.identifyConflicts(false);
 
 	}
 
@@ -63,7 +64,8 @@ public class strategy {
 
 		if (r.equals("0")) {
 			Conflict_Resolver.manual_Selector.select();
-			conflicts_Finder.identifyConflicts(0, true);
+			resolver.manual_selector = true;
+			conflicts_Finder.identifyConflicts(true);
 		}
 		else if (r.equals("1")) {
 			File file = new File("auto_FunctionSelector.xml");
@@ -71,11 +73,13 @@ public class strategy {
 			if(!file.exists()) {
 				System.out.println("Auto resolution not possible, please select manually.");
 				Conflict_Resolver.manual_Selector.select();
-				conflicts_Finder.identifyConflicts(0, true);
+				resolver.manual_selector = true;
+				conflicts_Finder.identifyConflicts(true);
 			}
 			else {
 				Conflict_Resolver.auto_Selector.select();
-				conflicts_Finder.identifyConflicts(1, true);
+				resolver.auto_selector = true;
+				conflicts_Finder.identifyConflicts(true);
 			}
 		}
 

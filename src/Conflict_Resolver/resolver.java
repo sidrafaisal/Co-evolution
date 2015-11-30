@@ -6,6 +6,9 @@ public class resolver {
 			"shortest", "longest", "concatenation", "bestSource", "globalVote", "latest", "threshold", "best", "topN", "chooseDepending", 
 			"chooseCorresponding", "mostComplete"};	
 		
+		public static boolean manual_selector = false;
+		public static boolean auto_selector = false;
+		
 		public static String apply (String function, String [] args, String type){	
 
 			if(function.equals("sum") || function.equals("average") || function.equals("max") || function.equals("min") ||

@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,6 +23,7 @@ import org.w3c.dom.NodeList;
 public class auto_Selector {
 
 	public static int numberofIterations;
+	public static Map<String, String> preferedSourceforPredicate  = new HashMap<String, String>();
 	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 
 	public static void record (Map<String, String> r) {
@@ -41,6 +43,15 @@ public class auto_Selector {
 
 	public static void select () {	
 		try {
+			//create config file for future use
+			DocumentBuilderFactory mFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder mBuilder = mFactory.newDocumentBuilder();
+
+			Document mdoc = mBuilder.newDocument();
+			Element rootElement = mdoc.createElement("Predicate_Function");
+			mdoc.appendChild(rootElement);
+			
+			// read auto-selector
 			File fXmlFile = new File("auto_FunctionSelector.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -59,7 +70,7 @@ public class auto_Selector {
 					Node fun = fList.item(0);
 					Element f = (Element) fun;
 
-					String prefferedfname = f.getAttribute("name");
+					String prefferedfname = f.getAttribute("name");					
 					Double maxscore = Double.parseDouble(f.getAttribute("score"));
 
 					for (int temps = 1; temps < fList.getLength(); temps++) {
@@ -72,11 +83,35 @@ public class auto_Selector {
 							prefferedfname = f.getAttribute("name");
 						}
 					}
+					
+					Element st = mdoc.createElement("Predicate");
+					rootElement.appendChild(st);
+					st.setAttribute("name", predicate);					
+					st.setAttribute("function", prefferedfname);
+					
+					if (prefferedfname.equals("bestSource")){
+						System.out.println("\nEnter your first preference: source or target");
+						String prf = Co_Evolution_Manager.main.scanner.nextLine();
+						
+						preferedSourceforPredicate.put(predicate, prf);
+						st.setAttribute ("preference", prf);
+					}
 					set (predicate, prefferedfname);
-					System.out.println(predicate+prefferedfname);
-
 				}
 			}
+			// write the content into xml file
+						TransformerFactory transformerFactory = TransformerFactory.newInstance();
+						Transformer transformer = transformerFactory.newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+						DOMSource source = new DOMSource(mdoc);
+
+						int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");
+						String filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget.substring(0, pos)+".xml";
+						
+						StreamResult result = new StreamResult(new File(filename));
+						transformer.transform(source, result);					
+					
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -174,7 +209,6 @@ public class auto_Selector {
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
-
 
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");

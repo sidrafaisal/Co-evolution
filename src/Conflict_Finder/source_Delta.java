@@ -1,6 +1,7 @@
 package Conflict_Finder;
 
 import Conflict_Finder.conflicts_Finder;
+import Conflict_Resolver.resolver;
 import Co_Evolution_Manager.configure;
 
 import java.io.FileNotFoundException;
@@ -24,13 +25,14 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 
 public class source_Delta {
 
+	public static String current_Predicate = "";
 	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 
-	public static void apply (int selector, boolean resolve){
+	public static void apply (boolean resolve){
 		
-		if (selector == 0)
+		if (resolver.manual_selector == true)
 			resolutionFunctionforPredicate = Conflict_Resolver.manual_Selector.resolutionFunctionforPredicate;
-		else
+		else if (resolver.auto_selector == true)
 			resolutionFunctionforPredicate = Conflict_Resolver.auto_Selector.resolutionFunctionforPredicate;
 	additions_changeset(resolve);		//Step 1
 	deletions_changeset();				//Step 2
@@ -55,7 +57,7 @@ public class source_Delta {
 			RDFNode   object    = stmt.getObject();      // get the object
 
 			String functionforPredicate =resolutionFunctionforPredicate.get(predicate.toString()); 
-
+			current_Predicate = predicate.toString();
 			// printTriple ("configure.sourceAdditionsChangeset", subject, predicate, object);
 
 			List<Triple> conflictingTriplesDeletionSource = findCorrespondingTriples(configure.sourceDeletionsChangeset, subject, predicate, Node.ANY) ;
@@ -79,18 +81,27 @@ public class source_Delta {
 
 			if(conflictingTriplesDeletionTarget.size() > 0)
 				flag_DT = true;
-
-			if (!flag_DS && !flag_T && !flag_DT) { 
-				if (!flag_AT) 			//added by source	
-					omodel.add(stmt);	
-				else {					// added by source and target
+			
+			//added by source || modified by source || modified by source and target
+			
+			if ( (!flag_DS && !flag_T && !flag_DT && !flag_AT) ||	(flag_DS && !flag_DT && !flag_AT)	||
+					(flag_DS && flag_T && flag_DT && flag_AT))	
+			
+				omodel.add(stmt);
+			
+			// added by source and target ||  modified by source and added by target || modified by source and deleted by target
+			
+			else if ( (!flag_DS && !flag_T && !flag_DT && flag_AT) ||  (flag_DS && !flag_DT && flag_AT && !flag_T) ||
+					(flag_DS && flag_T && flag_DT && flag_AT)) {	
+				
 					int conflictingTriplesAdditionsize = conflictingTriplesAdditionTarget.size();
+				
 					for (int i = 0; i < conflictingTriplesAdditionsize; i++)
 					{
 						Triple t = conflictingTriplesAdditionTarget.get(i);
 						if(object.toString().equals(t.getObject().toString())){		//same values			
 							omodel.add(stmt);
-						} else if (resolve) {	
+						} else if (resolve) {	//different values (directly use preference or resolved?)
 							String type, rv = "";
 
 							//	if (object.isLiteral())
@@ -100,68 +111,13 @@ public class source_Delta {
 							type = getType(object.asLiteral().getDatatypeURI());
 							//	} else
 							//		val1 = object.toString();
-
+							
 							rv = Conflict_Resolver.resolver.apply(functionforPredicate, args, type);
 							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
 							System.out.println("add after resolve...........");			
 						}
 					}					
-				}
-			} else if (flag_DS && !flag_DT){ 		
-				if(!flag_AT){					//modified by source
-					omodel.add(stmt);							
-				} else if (flag_AT && !flag_T) {			//modified by source and added by target
-					int conflictingTriplesAdditionsize = conflictingTriplesAdditionTarget.size();		
-					for (int i = 0; i < conflictingTriplesAdditionsize; i++)
-					{
-						Triple t = conflictingTriplesAdditionTarget.get(i);
-						if(object.toString().equals(t.getObject().toString())){		//same values			
-							omodel.add(stmt);
-						} else if (resolve) {										//different values (directly use preference or resolved?)
-							String type, rv = "";
-
-							//	if (object.isLiteral())
-							//	{	
-							String [] args = { object.asLiteral().getValue().toString(),
-									t.getObject().getLiteralValue().toString() };								
-							type = getType(object.asLiteral().getDatatypeURI());
-							//	} else
-							//		val1 = object.toString();
-
-							rv = Conflict_Resolver.resolver.apply(functionforPredicate, args, type);
-							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
-							System.out.println("add after resolve...........");			
-						}
-					}
-				}
-			} else if (flag_DS && flag_T && flag_DT) { 
-				if(!flag_AT){							//modified by source and deleted by target
-					omodel.add(stmt);	//okaY?						
-				} else {									//modified by source and target 
-					int conflictingTriplesAdditionsize = conflictingTriplesAdditionTarget.size();
-					for (int i = 0; i < conflictingTriplesAdditionsize; i++)
-					{
-						Triple t = conflictingTriplesAdditionTarget.get(i);
-						if(object.toString().equals(t.getObject().toString())){		//same values			
-							omodel.add(stmt);
-						} else if (resolve) {										//different values
-							String type, rv = "";
-
-							//	if (object.isLiteral())
-							//	{	
-							String [] args = { object.asLiteral().getValue().toString(),
-									t.getObject().getLiteralValue().toString() };								
-							type = getType(object.asLiteral().getDatatypeURI());
-							//	} else
-							//		val1 = object.toString();
-
-							rv = Conflict_Resolver.resolver.apply(functionforPredicate, args, type);
-							omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, object.asLiteral().getDatatype())));
-							System.out.println("add after resolve...........");		
-						}
-					}
-				}
-			} else if (!flag_DS && flag_T && flag_DT) { 
+				} else if (!flag_DS && flag_T && flag_DT) { 
 				if(!flag_AT){							//added by source and deleted by target
 					;						
 				} else {									//added by source and modified by target 

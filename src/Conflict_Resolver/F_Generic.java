@@ -3,6 +3,8 @@ package Conflict_Resolver;
 import java.util.Arrays;
 import java.util.Random;
 
+import Conflict_Finder.source_Delta;
+
 public class F_Generic {
 	
 	public static String Compute (String function, String [] args){
@@ -54,11 +56,24 @@ public class F_Generic {
 				return " ";
 		}
 	}
+	
 	/*								Resolution Functions				*/	
 	
 	public static String bestSource (String[] args) {
-
-		return args[0];
+		
+		String p = source_Delta.current_Predicate;
+		String result, preferedsource;
+		if (resolver.manual_selector == true)
+			preferedsource = manual_Selector.preferedSourceforPredicate.get(p);
+		else 
+			preferedsource = auto_Selector.preferedSourceforPredicate.get(p);
+		
+		if (preferedsource.equals("source"))
+			result = args[0];
+		else
+			result = args [1];
+		
+			return result;
 	}	
 	public static String globalVote (String[] args) {
 

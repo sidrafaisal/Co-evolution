@@ -17,6 +17,7 @@ public class main {
 		new configure ("sa.nt", "sd.nt", "ta.nt", "td.nt", "t.nt", "syncsourceNkeeplocalWresolvedconflicts", "NT");   
 		strategy.apply ();
 		emptyResources ();
+		renameOutput ();
 		scanner.close();
 	}
 
@@ -36,11 +37,22 @@ public class main {
 			f.delete();
 
 			f = new File (configure.targetDeletionsChangeset);
-			f.delete();
+			f.delete();			
 		} catch(Exception e){  		
 			e.printStackTrace();
 		}
 	}
 
+	
+	public static void renameOutput () 	{
+		
+		File ifile = new File(configure.newTarget);
+		File ofile = new File(configure.initialTarget);
+
+		if (ofile.exists()){
+				System.out.println("file exists");
+			} 
+		ifile.renameTo(ofile);
+	}
 
 }
