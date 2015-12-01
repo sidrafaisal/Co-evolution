@@ -1,8 +1,6 @@
 package Conflict_Resolver;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,7 +12,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,23 +20,20 @@ import org.w3c.dom.NodeList;
 public class auto_Selector {
 
 	public static int numberofIterations;
-	public static Map<String, String> preferedSourceforPredicate  = new HashMap<String, String>();
-	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 
-	public static void record (Map<String, String> r) {
+	public static void record () {
 
 		File file = new File("auto_FunctionSelector.xml");
 
 		if(!file.exists()) 	
-			create(r);									
+			create();									
 		else 
-			modify(r);			
+			modify();			
 	}
 
 	public static void set (String p, String rf){	
-		resolutionFunctionforPredicate.put(p, rf);  
+		statistics.resolutionFunctionforPredicate.put(p, rf);  
 	}
-
 
 	public static void select () {	
 		try {
@@ -93,9 +87,20 @@ public class auto_Selector {
 						System.out.println("\nEnter your first preference: source or target");
 						String prf = Co_Evolution_Manager.main.scanner.nextLine();
 						
-						preferedSourceforPredicate.put(predicate, prf);
+						statistics.preferedSourceforPredicate.put(predicate, prf);
 						st.setAttribute ("preference", prf);
+						
+					} else if (prefferedfname.equals("mostComplete")) {
+						
+						String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(predicate);
+						statistics.preferedSourceforPredicate.put(predicate, sourceWithFewerBlanks);
+					
+					} else if (prefferedfname.equals("globalVote")) {
+					
+						Conflict_Resolver.statistics.globalVote(predicate);					
+				
 					}
+					
 					set (predicate, prefferedfname);
 				}
 			}
@@ -117,7 +122,7 @@ public class auto_Selector {
 		}
 	}
 
-	public static void modify (Map<String, String> r) {
+	public static void modify () {
 		try {
 			File fXmlFile = new File("auto_FunctionSelector.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -134,7 +139,7 @@ public class auto_Selector {
 				if (pred.getNodeType() == Node.ELEMENT_NODE) {
 					Element p = (Element) pred;
 					String predicate = p.getAttribute("name");
-					String ifunction = r.get(predicate);
+					String ifunction = statistics.resolutionFunctionforPredicate.get(predicate);
 
 					NodeList fList = p.getElementsByTagName("Function");
 
@@ -168,7 +173,7 @@ public class auto_Selector {
 		}
 	}
 
-	public static void create (Map<String, String> r) {
+	public static void create () {
 		numberofIterations = 1;
 
 		int size = resolver.availableResolutionFunctions.length;
@@ -183,7 +188,7 @@ public class auto_Selector {
 			rootElement.setAttribute("numberofIterations", Integer.toString(numberofIterations));
 			doc.appendChild(rootElement);
 
-			for (String key: r.keySet()) {
+			for (String key: statistics.resolutionFunctionforPredicate.keySet()) {
 				String predicate = key;
 
 				Element st = doc.createElement("Predicate");
@@ -191,7 +196,7 @@ public class auto_Selector {
 
 				st.setAttribute("name", predicate);					
 
-				String selectedFunction = r.get(key);
+				String selectedFunction = statistics.resolutionFunctionforPredicate.get(key);
 				for (int i = 0; i< size; i++) {
 					Double score;
 					String availableFunction = resolver.availableResolutionFunctions[i];

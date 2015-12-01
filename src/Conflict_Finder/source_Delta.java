@@ -1,15 +1,13 @@
 package Conflict_Finder;
 
 import Conflict_Finder.conflicts_Finder;
-import Conflict_Resolver.resolver;
+import Conflict_Resolver.statistics;
 import Co_Evolution_Manager.configure;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -26,16 +24,12 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 public class source_Delta {
 
 	public static String current_Predicate = "";
-	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 
 	public static void apply (boolean resolve){
-		
-		if (resolver.manual_selector == true)
-			resolutionFunctionforPredicate = Conflict_Resolver.manual_Selector.resolutionFunctionforPredicate;
-		else if (resolver.auto_selector == true)
-			resolutionFunctionforPredicate = Conflict_Resolver.auto_Selector.resolutionFunctionforPredicate;
+
 	additions_changeset(resolve);		//Step 1
 	deletions_changeset();				//Step 2
+
 	}
 	
 	/*Find conflicts for source additions changeset: Pick each triple s1,p1,o1 from source additions changeset and
@@ -56,7 +50,7 @@ public class source_Delta {
 			Property  predicate = stmt.getPredicate();   // get the predicate
 			RDFNode   object    = stmt.getObject();      // get the object
 
-			String functionforPredicate =resolutionFunctionforPredicate.get(predicate.toString()); 
+			String functionforPredicate =statistics.resolutionFunctionforPredicate.get(predicate.toString()); 
 			current_Predicate = predicate.toString();
 			// printTriple ("configure.sourceAdditionsChangeset", subject, predicate, object);
 
@@ -211,12 +205,6 @@ and check for s1,p1,o2 in target changesets and initial target*/
 				for (Triple deleteConflict : conflictingTriples) // Delete the conflicting triples from target
 					model.getGraph().delete(deleteConflict);
 
-				// After deletion
-				/*results = GraphUtil.findAll(model.getGraph());
-				while (results.hasNext()) {
-					System.out.println(results.next());
-				}*/
-	
 				try {				
 					model.write(new FileOutputStream(filename), configure.fileSyntax);
 				} catch (FileNotFoundException e) {

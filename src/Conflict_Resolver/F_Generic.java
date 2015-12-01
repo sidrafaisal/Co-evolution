@@ -29,7 +29,7 @@ public class F_Generic {
 				return bestSource(args);
 			
 			case "globalVote":
-				return globalVote(args);
+				return globalVote();
 			
 			case "latest":
 				return latest(args);
@@ -59,26 +59,6 @@ public class F_Generic {
 	
 	/*								Resolution Functions				*/	
 	
-	public static String bestSource (String[] args) {
-		
-		String p = source_Delta.current_Predicate;
-		String result, preferedsource;
-		if (resolver.manual_selector == true)
-			preferedsource = manual_Selector.preferedSourceforPredicate.get(p);
-		else 
-			preferedsource = auto_Selector.preferedSourceforPredicate.get(p);
-		
-		if (preferedsource.equals("source"))
-			result = args[0];
-		else
-			result = args [1];
-		
-			return result;
-	}	
-	public static String globalVote (String[] args) {
-
-		return args[0];
-	}	
 	public static String latest (String[] args) {
 
 		return args[0];
@@ -103,11 +83,42 @@ public class F_Generic {
 
 		return args[0];
 	}	
-	public static String mostComplete (String[] args) {
+	
 
-		return args[0];
+	
+	
+//requires data as well as additional info
+	
+	public static String globalVote () {	
+		
+		String p = source_Delta.current_Predicate;
+		return Conflict_Resolver.statistics.mostFrequentValue.get(p);	
+	
 	}	
-//requires metadata as well
+	
+	public static String bestSource (String[] args) {
+		
+		String p = source_Delta.current_Predicate;
+		String preferedsource = statistics.preferedSourceforPredicate.get(p);
+		
+		if (preferedsource.equals("source"))
+			return args[0];
+		else
+			return args[1];
+
+	}	
+	
+	public static String mostComplete (String[] args) {
+		
+		String p = source_Delta.current_Predicate;
+		String preferedsource = statistics.preferedSourceforPredicate.get(p);
+	
+		if (preferedsource.equals("source"))
+			return args[0];
+		else
+			return args[1];
+		
+	}	
 	
 //requires only data	
 	public static String first (String[] args) {

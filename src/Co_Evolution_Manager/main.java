@@ -18,6 +18,7 @@ public class main {
 		strategy.apply ();
 		emptyResources ();
 		renameOutput ();
+		//Conflict_Resolver.statistics.findBlankNodes("rdf:Description"); 
 		scanner.close();
 	}
 

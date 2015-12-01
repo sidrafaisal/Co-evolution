@@ -1,11 +1,10 @@
 package Conflict_Resolver;
 
+import Conflict_Resolver.statistics;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,9 +23,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class manual_Selector {		
-	
-	public static Map<String, String> preferedSourceforPredicate  = new HashMap<String, String>();
-	public static Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 
 	public static String filename = "";
 	
@@ -70,14 +66,23 @@ public class manual_Selector {
 				st.setAttribute("name", line);					
 				st.setAttribute("function", rf);
 				
-				if (rf.equals("bestSource")){
+				if (rf.equals("bestSource")) {
+				
 					System.out.println("\nEnter your first preference: source or target");
 					String prf = Co_Evolution_Manager.main.scanner.nextLine();			
 					st.setAttribute("preference", prf);
-					preferedSourceforPredicate.put(line, prf);
+					statistics.preferedSourceforPredicate.put(line, prf);
+				
+				} else if (rf.equals("mostComplete")) {
+					
+					String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(line);
+					statistics.preferedSourceforPredicate.put(line, sourceWithFewerBlanks);
+			
+				} else if (rf.equals("globalVote")) {
+					Conflict_Resolver.statistics.globalVote(line);					
 				}
 				
-				resolutionFunctionforPredicate.put (line, rf);			
+				statistics.resolutionFunctionforPredicate.put (line, rf);			
 			}
 
 			br.close();
@@ -92,7 +97,7 @@ public class manual_Selector {
 			StreamResult result = new StreamResult(new File(filename));
 			transformer.transform(source, result);
 			
-			auto_Selector.record ( resolutionFunctionforPredicate );
+			auto_Selector.record ( );
 			
 		} catch (IOException|DOMException|ParserConfigurationException|TransformerException e) {
 			e.printStackTrace();
@@ -112,14 +117,25 @@ public class manual_Selector {
 
 			for (int temp = 0; temp < predList.getLength(); temp++) {
 				Node pred = predList.item(temp);	    				
+			
 				if (pred.getNodeType() == Node.ELEMENT_NODE) {
 					Element p = (Element) pred;
 					String predicate = p.getAttribute("name");
 					String function = p.getAttribute("function");
+				
 					if (function.equals("bestSource"))
-						preferedSourceforPredicate.put(predicate, p.getAttribute("preference"));
+						statistics.preferedSourceforPredicate.put(predicate, p.getAttribute("preference"));
 					
-					resolutionFunctionforPredicate.put(predicate, function);
+					else if (function.equals("mostComplete")) {
+					
+						String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(predicate);
+						statistics.preferedSourceforPredicate.put(predicate, sourceWithFewerBlanks);
+					
+					} else if (function.equals("globalVote")) {
+						Conflict_Resolver.statistics.globalVote(predicate);					
+					}
+					
+					statistics.resolutionFunctionforPredicate.put(predicate, function);
 				}
 			}
 		} catch (Exception e) {
@@ -128,11 +144,11 @@ public class manual_Selector {
 	}
 
 	public static void set (String p, String rf){	
-		resolutionFunctionforPredicate.put(p, rf);  
+		statistics.resolutionFunctionforPredicate.put(p, rf);  
 	}
 
 	public static String get (String p){		
-		return resolutionFunctionforPredicate.get(p);  
+		return statistics.resolutionFunctionforPredicate.get(p);  
 	}
 
 }
