@@ -28,8 +28,8 @@ public class manual_Selector {
 	
 	public static void select () {
 
-		int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");
-		filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget.substring(0, pos)+".xml";
+		//int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");.substring(0, pos)
+		filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
 		File file = new File(filename);
 
 		if(!file.exists()) 	
@@ -100,6 +100,7 @@ public class manual_Selector {
 			auto_Selector.record ( );
 			
 		} catch (IOException|DOMException|ParserConfigurationException|TransformerException e) {
+			System.out.println(""+e);
 			e.printStackTrace();
 		}
 
@@ -139,6 +140,7 @@ public class manual_Selector {
 				}
 			}
 		} catch (Exception e) {
+			System.out.println(""+e);
 			e.printStackTrace();
 		}
 	}

@@ -111,13 +111,14 @@ public class auto_Selector {
 						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 						DOMSource source = new DOMSource(mdoc);
 
-						int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");
-						String filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget.substring(0, pos)+".xml";
+//						int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");.substring(0, pos)
+						String filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
 						
 						StreamResult result = new StreamResult(new File(filename));
 						transformer.transform(source, result);					
 					
 		} catch (Exception e) {
+			System.out.println(""+e);
 			e.printStackTrace();
 		}
 	}
@@ -169,6 +170,7 @@ public class auto_Selector {
 
 			transformer.transform(source, result);
 		} catch (Exception e) {
+			System.out.println(""+e);
 			e.printStackTrace();
 		}
 	}
@@ -222,10 +224,9 @@ public class auto_Selector {
 
 			transformer.transform(source, result);
 
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (TransformerException tfe) {
-			tfe.printStackTrace();
+		} catch (ParserConfigurationException | TransformerException e) {
+			System.out.println(""+e);
+			e.printStackTrace();
 		}
 
 	}

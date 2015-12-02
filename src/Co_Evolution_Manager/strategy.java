@@ -104,34 +104,46 @@ public class strategy {
 	// delete the triples for final output
 	public static void deleteTriples (String initialtarget, String targetDeletionsChangeset, String outputfilename){
 
-		Model imodel = FileManager.get().loadModel(initialtarget);		
-		Model tmodel = FileManager.get().loadModel(targetDeletionsChangeset);		
+		if (initialtarget!=null) {	
+			try {
+				Model imodel = FileManager.get().loadModel(initialtarget, configure.fileSyntax);	
 
-		StmtIterator iter = tmodel.listStatements();
+				if (!targetDeletionsChangeset.equals(null)) {
+					Model tmodel = FileManager.get().loadModel(targetDeletionsChangeset, configure.fileSyntax);		
 
-		while (iter.hasNext()) {
-			Statement stmt = iter.nextStatement();  // get next statement 
-			imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial		    					   
-		}
+					StmtIterator iter = tmodel.listStatements();
 
-		try {	
-			imodel.write(new FileOutputStream(outputfilename), configure.fileSyntax);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		imodel.close();
-		tmodel.close();
+					while (iter.hasNext()) {
+						Statement stmt = iter.nextStatement();  // get next statement 
+						imodel.getGraph().delete(stmt.asTriple());	// Delete the triples of target from initial		    					   
+					}
+					tmodel.close();
+				} 
+
+				imodel.write(new FileOutputStream(outputfilename), configure.fileSyntax);
+
+				imodel.close();
+
+			} catch (FileNotFoundException | org.apache.jena.riot.RiotException e) {
+				System.out.println(""+e);
+				e.printStackTrace();
+			}
+		} else 
+			;
 	}
 
 	// write in output file
 	public static void writeTriples(String inputfilename, String outputfilename) {
-		Model model = FileManager.get().loadModel(inputfilename);
-		try {				
-			model.write(new FileOutputStream(outputfilename, true), configure.fileSyntax);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		model.close();
+		if (inputfilename!=null)
+		{
+			try {
+				Model model = FileManager.get().loadModel(inputfilename, configure.fileSyntax);			
+				model.write(new FileOutputStream(outputfilename, true), configure.fileSyntax);
+				model.close();
+			} catch (FileNotFoundException | org.apache.jena.riot.RiotException e) {
+				System.out.println(""+e);
+				e.printStackTrace();
+			}}
 	}
 
 	public String getStrategy(){

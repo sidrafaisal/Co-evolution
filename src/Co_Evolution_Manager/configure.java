@@ -1,6 +1,9 @@
 package Co_Evolution_Manager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,6 +16,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.jena.rdf.model.ModelFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -30,25 +34,54 @@ public class configure {
 
 		// set the files to be used by other classes						
 		setfileSyntax(synt);
-		setinitialTarget(t);
 
-		setsourceAdditionsChangeset(sa);
-		setsourceDeletionsChangeset(sd);
+		/*	if (fileSyntax.equals("Turtle") || fileSyntax.equals("TURTLE") || fileSyntax.equals("TTL"))
+			setnewTarget("newtarget.ttl");
+		else if (fileSyntax.equals("N-TRIPLES") ||fileSyntax.equals("N-TRIPLE") || fileSyntax.equals("NT"))
+			setnewTarget("newtarget.nt");
+		else if (fileSyntax.equals("RDF/XML"))
+			setnewTarget("newtarget.rdf");
+		else if (fileSyntax.equals("JSON-LD"))
+			setnewTarget("newtarget.jsonld");
+		else
+*/
+		setnewTarget("newtarget");				
 
-		settargetAdditionsChangeset(ta);
-		settargetDeletionsChangeset(td);
-
-		Co_Evolution_Manager.strategy.setStrategy(strat);
-
-		setnewTarget("newtarget."+fileSyntax);
 		File nt = new File(newTarget);
 		if(!nt.exists())
-			try {
+			try {				
 				nt.createNewFile();
-			} catch (IOException e) {
+			} catch (IOException e) {				
 				e.printStackTrace();
 			}
 
+
+		if( !isEmpty (t))
+			setinitialTarget(t);
+		else
+			setinitialTarget(null);	
+
+		if( !isEmpty (sa))
+			setsourceAdditionsChangeset(sa);
+		else
+			setsourceAdditionsChangeset(null);
+
+		if( !isEmpty (sd))
+			setsourceDeletionsChangeset(sd);
+		else
+			setsourceDeletionsChangeset(null);
+
+		if( !isEmpty (ta))
+			settargetAdditionsChangeset(ta);
+		else
+			settargetAdditionsChangeset(null);
+
+		if( !isEmpty (td))
+			settargetDeletionsChangeset(td);
+		else
+			settargetDeletionsChangeset(null);
+
+		Co_Evolution_Manager.strategy.setStrategy(strat);
 		save(strat);				
 	}
 
@@ -85,10 +118,8 @@ public class configure {
 
 			transformer.transform(source, result);
 
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (TransformerException tfe) {
-			tfe.printStackTrace();
+		} catch (ParserConfigurationException | TransformerException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -118,5 +149,13 @@ public class configure {
 
 	public static void settargetDeletionsChangeset(String s){
 		targetDeletionsChangeset = s;
+	}
+
+	public static boolean isEmpty(String f) {
+		File file = new File(f);
+		if(file.length()<=0)
+			return true;
+		else
+			return false;
 	}
 }
