@@ -25,7 +25,8 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 public class source_Delta {
 
 	public static String current_Predicate = "";
-
+	public static int number_Of_ConflictingTriples = 0;
+	
 	public static void apply (boolean resolve){
 
 		additions_changeset(resolve);		//Step 1
@@ -79,14 +80,17 @@ public class source_Delta {
 					if(conflictingTriplesDeletionTarget.size() > 0)
 						flag_DT = true;
 
-					//added by source || modified by source || modified by source and target
+					//added by source || modified by source || modified by source and deleted by target
 
+// In second case of (flag_DS && !flag_DT && !flag_AT), it does not matter whether this triple exists in initial target or not. 					
+// New value will be added even if the target has previously deleted this triple					
+					
 					if ( (!flag_DS && !flag_T && !flag_DT && !flag_AT) ||	(flag_DS && !flag_DT && !flag_AT)	||
-							(flag_DS && flag_T && flag_DT && flag_AT))	
+							(flag_DS && flag_T && flag_DT && !flag_AT))	
 
 						omodel.add(stmt);
 
-					// added by source and target ||  modified by source and added by target || modified by source and deleted by target
+					// added by source and target ||  modified by source and added by target || modified by source and modified by target
 
 					else if ( (!flag_DS && !flag_T && !flag_DT && flag_AT) ||  (flag_DS && !flag_DT && flag_AT && !flag_T) ||
 							(flag_DS && flag_T && flag_DT && flag_AT)) {	
@@ -99,6 +103,7 @@ public class source_Delta {
 							if(object.toString().equals(t.getObject().toString())){		//same values			
 								omodel.add(stmt);
 							} else if (resolve) {	//different values (directly use preference or resolved?)
+								number_Of_ConflictingTriples++;
 								String type, rv = "";
 
 								//	if (object.isLiteral())
@@ -116,8 +121,8 @@ public class source_Delta {
 						}					
 					} else if (!flag_DS && flag_T && flag_DT) { 
 						if(!flag_AT){							//added by source and deleted by target
-							;						
-						} else {									//added by source and modified by target 
+							;									// default case is to ignore this triple
+						} else {								//added by source and modified by target 
 							omodel.getGraph().add(conflictingTriplesAdditionTarget.get(0));
 						}
 					}	
@@ -196,11 +201,12 @@ and check for s1,p1,o2 in target changesets and initial target*/
 	/*			Find conflicting triples in target*/
 
 	public static List<Triple> findCorrespondingTriples(String filename, Resource subject, Property predicate, Node object) {
+		
+		List<Triple> conflictingTriples = new ArrayList<Triple>();
+		
 		if (filename!=null){
 			try {
 				Model model = FileManager.get().loadModel(filename, configure.fileSyntax);
-
-				List<Triple> conflictingTriples = new ArrayList<Triple>();
 
 				ExtendedIterator<Triple> results = model.getGraph().find(subject.asNode(), predicate.asNode(), object); 
 				while (results.hasNext()) {
@@ -213,13 +219,13 @@ and check for s1,p1,o2 in target changesets and initial target*/
 
 				model.write(new FileOutputStream(filename), configure.fileSyntax);
 				model.close();
-				return conflictingTriples;
 
 			} catch (FileNotFoundException | org.apache.jena.riot.RiotException e) {
 				System.out.println(""+e);
 				e.printStackTrace();
 			}
-		}			return null;
+		}
+		return conflictingTriples;
 	}
 
 	public static String getType(String type) {

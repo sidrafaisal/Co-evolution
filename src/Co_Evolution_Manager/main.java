@@ -1,6 +1,9 @@
 package Co_Evolution_Manager;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 public class main {
@@ -13,39 +16,24 @@ public class main {
 		 * "syncsourceNkeeplocalBnotconflicts" "syncsourceNkeeplocalWresolvedconflicts" "syncsourceNignorelocal" "nsyncsourceBkeeplocal" 
 		 * "nsyncsourceNignorelocal"
 		 * */		
+		
 		scanner = new Scanner(System.in);		
-		new configure ("sa", "sd", "ta", "td", "t", "syncsourceNignorelocal"/*"syncsourceNkeeplocalWresolvedconflicts"*/, "RDF/XML");   
+		String [] arr = {"sa", "sd", "ta", "td", "t"};
+		new configure (arr[0], arr[1], arr[2], arr[3], arr[4], /*"syncsourceNignorelocal"*/"syncsourceNkeeplocalWresolvedconflicts", "NT");   
 		strategy.apply ();
-		emptyResources ();
+		emptyResources (arr);
 		renameOutput ("t");
-		//Conflict_Resolver.statistics.findBlankNodes("rdf:Description"); 
 		scanner.close();
 	}
 
 
-	public static void emptyResources () {
+	public static void emptyResources (String [] f) {
 		try {
-			File f;
+			File file;
 
-			if (configure.initialTarget != null) {
-				f = new File (configure.initialTarget);
-				f.delete();
-			}
-			if (configure.sourceAdditionsChangeset != null) {			
-				f = new File (configure.sourceAdditionsChangeset);
-				f.delete();
-			}
-			if (configure.sourceDeletionsChangeset != null) {
-				f = new File (configure.sourceDeletionsChangeset);
-				f.delete();
-			}
-			if (configure.targetAdditionsChangeset != null) {
-				f = new File (configure.targetAdditionsChangeset);
-				f.delete();
-			}
-			if (configure.targetDeletionsChangeset != null) {
-				f = new File (configure.targetDeletionsChangeset);
-				f.delete();			
+			for (int i = 0; i < f.length ; i++ ) {
+				file = new File (f[i]);
+				file.delete();
 			}
 		} catch(Exception e){  		
 			e.printStackTrace();

@@ -7,6 +7,8 @@ import Conflict_Finder.source_Delta;
 
 public class F_Generic {
 	
+	public static String latestSource;
+	
 	public static String Compute (String function, String [] args){
 		switch (function) {
 			
@@ -59,10 +61,7 @@ public class F_Generic {
 	
 	/*								Resolution Functions				*/	
 	
-	public static String latest (String[] args) {
-
-		return args[0];
-	}	
+	
 	public static String threshold (String[] args) {
 
 		return args[0];
@@ -88,6 +87,14 @@ public class F_Generic {
 	
 	
 //requires data as well as additional info
+	
+	public static String latest (String[] args) {
+		//todo: read date from both files
+		if (latestSource.equals("source"))
+			return args[0];
+		else 
+			return args[1];	
+	}
 	
 	public static String globalVote () {	
 		

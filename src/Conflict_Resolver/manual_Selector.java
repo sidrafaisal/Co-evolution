@@ -5,6 +5,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,20 +28,42 @@ import org.w3c.dom.NodeList;
 public class manual_Selector {		
 
 	public static String filename = "";
-	
+
 	public static void select () {
+		
+		Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();	
 
 		//int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");.substring(0, pos)
 		filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
 		File file = new File(filename);
 
-		if(!file.exists()) 	
-			create();									
+		if(!file.exists()) 	{
+			int size = resolver.availableResolutionFunctions.length;
+			System.out.println("Avaialable resolution functions:");
+			for (int i = 0; i < size; i++) 
+				System.out.print(resolver.availableResolutionFunctions [i] + " . ");
+			BufferedReader br;
+			try {
+				br = new BufferedReader(new FileReader("predicates.txt"));
+
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					System.out.println("\nEnter a resolution function for this property: "+ line);
+
+					String rf = Co_Evolution_Manager.main.scanner.nextLine();
+					resolutionFunctionforPredicate.put(line, rf);
+				}
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			create(resolutionFunctionforPredicate);		
+		}
 		else 
 			populate();	
 	}
 
-	public static void create () {
+	public static void create (Map<String, String> resolutionFunctionforPredicate) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -47,59 +72,72 @@ public class manual_Selector {
 			Element rootElement = doc.createElement("Predicate_Function");
 			doc.appendChild(rootElement);
 
-			int size = resolver.availableResolutionFunctions.length;
-			System.out.println("Avaialable resolution functions");
-			for (int i = 0; i < size; i++) 
-				System.out.print(resolver.availableResolutionFunctions [i] + " . ");
+			Iterator<String> keySetIterator = resolutionFunctionforPredicate.keySet().iterator();
+			while(keySetIterator.hasNext()){	
+				String key = keySetIterator.next();
+				String value = resolutionFunctionforPredicate.get(key);
 
-			BufferedReader br = new BufferedReader(new FileReader("predicates.txt"));
-
-			String line = null;
-
-			while ((line = br.readLine()) != null) {
-				System.out.println("\nEnter a resolution function for this property: "+ line);
-
-				String rf = Co_Evolution_Manager.main.scanner.nextLine();
-				
 				Element st = doc.createElement("Predicate");
 				rootElement.appendChild(st);
-				st.setAttribute("name", line);					
-				st.setAttribute("function", rf);
-				
-				if (rf.equals("bestSource")) {
-				
+				st.setAttribute("name", key);					
+				st.setAttribute("function", value);
+
+				//set additional info required by some specific predicates
+				if (value.equals("bestSource")) {
+
 					System.out.println("\nEnter your first preference: source or target");
 					String prf = Co_Evolution_Manager.main.scanner.nextLine();			
 					st.setAttribute("preference", prf);
-					statistics.preferedSourceforPredicate.put(line, prf);
-				
-				} else if (rf.equals("mostComplete")) {
-					
-					String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(line);
-					statistics.preferedSourceforPredicate.put(line, sourceWithFewerBlanks);
-			
-				} else if (rf.equals("globalVote")) {
-					Conflict_Resolver.statistics.globalVote(line);					
+					statistics.preferedSourceforPredicate.put(key, prf);
+
+				} else if (value.equals("mostComplete")) {
+
+					String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(value);
+					statistics.preferedSourceforPredicate.put(value, sourceWithFewerBlanks);
+
+				} else if (value.equals("globalVote")) {
+					Conflict_Resolver.statistics.globalVote(value);					
 				}
-				
-				statistics.resolutionFunctionforPredicate.put (line, rf);			
+
+				statistics.resolutionFunctionforPredicate.put (key, value);			
 			}
 
-			br.close();
+			
 
+/*					if (prefferedfname.equals("bestSource")){
+				System.out.println("\nEnter your first preference: source or target");
+				String prf = Co_Evolution_Manager.main.scanner.nextLine();
+				
+				statistics.preferedSourceforPredicate.put(predicate, prf);
+				st.setAttribute ("preference", prf);
+				
+			} else if (prefferedfname.equals("mostComplete")) {
+				
+				String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(predicate);
+				statistics.preferedSourceforPredicate.put(predicate, sourceWithFewerBlanks);
+			
+			} else if (prefferedfname.equals("globalVote")) {
+			
+				Conflict_Resolver.statistics.globalVote(predicate);					
+		
+			}*/
+			
+			
+			
+			
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 			DOMSource source = new DOMSource(doc);
-			
+
 			StreamResult result = new StreamResult(new File(filename));
 			transformer.transform(source, result);
-			
+
 			auto_Selector.record ( );
-			
-		} catch (IOException|DOMException|ParserConfigurationException|TransformerException e) {
+
+		} catch (DOMException|ParserConfigurationException|TransformerException e) {
 			System.out.println(""+e);
 			e.printStackTrace();
 		}
@@ -113,29 +151,29 @@ public class manual_Selector {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
 			doc.getDocumentElement().normalize();
-	    			
+
 			NodeList predList = doc.getElementsByTagName("Predicate");
 
 			for (int temp = 0; temp < predList.getLength(); temp++) {
 				Node pred = predList.item(temp);	    				
-			
+
 				if (pred.getNodeType() == Node.ELEMENT_NODE) {
 					Element p = (Element) pred;
 					String predicate = p.getAttribute("name");
 					String function = p.getAttribute("function");
-				
+
 					if (function.equals("bestSource"))
 						statistics.preferedSourceforPredicate.put(predicate, p.getAttribute("preference"));
-					
+
 					else if (function.equals("mostComplete")) {
-					
+
 						String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(predicate);
 						statistics.preferedSourceforPredicate.put(predicate, sourceWithFewerBlanks);
-					
+
 					} else if (function.equals("globalVote")) {
 						Conflict_Resolver.statistics.globalVote(predicate);					
 					}
-					
+
 					statistics.resolutionFunctionforPredicate.put(predicate, function);
 				}
 			}
