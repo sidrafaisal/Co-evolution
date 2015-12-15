@@ -40,8 +40,7 @@ public class auto_Selector {
 		try {
 			Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();
 			List<String> predicateList = getPredicates (); // get the required predicates to be extracted from auto_selector file
-			
-			// read auto-selector			
+		
 			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("auto_FunctionSelector.xml"));
 			doc.getDocumentElement().normalize();
 
@@ -50,15 +49,15 @@ public class auto_Selector {
 			NodeList predList = doc.getElementsByTagName("Predicate");
 
 			for (int temp = 0; temp < predList.getLength(); temp++) {	    				
-				
-					Element p = (Element) predList.item(temp);
-					String predicate = p.getAttribute("name");	
-					
-					if (predicateList.contains(predicate))
-					{					
+
+				Element p = (Element) predList.item(temp);
+				String predicate = p.getAttribute("name");	
+
+				if (predicateList.contains(predicate))
+				{					
 					NodeList fList = p.getElementsByTagName("Function");
 					Element f = (Element) fList.item(0);
-					
+
 					// pick the function with highest score
 					String prefferedfname = f.getAttribute("name");					
 					Double maxscore = Double.parseDouble(f.getAttribute("score"));
@@ -72,45 +71,45 @@ public class auto_Selector {
 							prefferedfname = f.getAttribute("name");
 						}
 					}
-					
+
 					//create element in manual.xml
 					resolutionFunctionforPredicate.put(predicate, prefferedfname); 
 					predicateList.remove(predicate);
 				}
 			}
-		
-		// Set rest of the predicates with function Any	
-		Iterator <String> notFound =predicateList.iterator(); 
-		while (notFound.hasNext()) {
-					
-			String predicate = notFound.next().toString();
-			
-			if (predicate != null) {		
-				resolutionFunctionforPredicate.put(predicate, "any");
 
-			
-			Element e = predicateElement (doc, predicate);
-			doc.getDocumentElement().appendChild(e);
-			String selectedFunction = "any";
-			e.setAttribute("function", selectedFunction);
-			doc.getDocumentElement().setAttribute("numberofIterations", String.valueOf(numberofIterations + 1));
-						
-			//set scores for all functions against this predicate
-			int size = resolver.availableResolutionFunctions.length;
-			for (int i = 0; i< size; i++) {
-				Double score;
-				String availableFunction = resolver.availableResolutionFunctions[i];
-				if (selectedFunction.equals(availableFunction))
-					score = 1.0 / ( numberofIterations + 1 );
-				else
-					score =	0.0; 						
+			// Set rest of the predicates with function Any	
+			Iterator <String> notFound =predicateList.iterator(); 
+			while (notFound.hasNext()) {
 
-				e.appendChild(scoreElement(doc, "Function", availableFunction, score.toString()));			
+				String predicate = notFound.next().toString();
+
+				if (predicate != null) {		
+					resolutionFunctionforPredicate.put(predicate, "any");
+
+
+					Element e = predicateElement (doc, predicate);
+					doc.getDocumentElement().appendChild(e);
+					String selectedFunction = "any";
+					e.setAttribute("function", selectedFunction);
+				//	doc.getDocumentElement().setAttribute("numberofIterations", String.valueOf(numberofIterations + 1));
+
+					//set scores for all functions against this predicate
+					int size = resolver.availableResolutionFunctions.length;
+					for (int i = 0; i< size; i++) {
+						Double score;
+						String availableFunction = resolver.availableResolutionFunctions[i];
+						if (selectedFunction.equals(availableFunction))
+							score = 1.0 / ( numberofIterations );
+						else
+							score =	0.0; 						
+
+						e.appendChild(scoreElement(doc, "Function", availableFunction, score.toString()));			
+					}
+				}
 			}
-		}
-		}
-		manual_Selector.filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
-		manual_Selector.create (resolutionFunctionforPredicate);
+			manual_Selector.filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
+			manual_Selector.create (resolutionFunctionforPredicate);
 			writeXML (doc, "auto_FunctionSelector.xml");
 		} catch (Exception e) {
 			System.out.println(""+e);
@@ -119,34 +118,32 @@ public class auto_Selector {
 	}
 
 
-	
+
 	public static void modify () {
 		try {
-			
+
 			List<String> predicateList = getPredicates();  // get the required predicates to be extracted from auto_selector file
-			
-			// read auto-selector	
-			
+
 			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("auto_FunctionSelector.xml"));
 			doc.getDocumentElement().normalize();
 
 			int numberofIterations = Integer.parseInt(doc.getDocumentElement().getAttribute("numberofIterations")) ;	 
 			doc.getDocumentElement().setAttribute("numberofIterations", String.valueOf(numberofIterations + 1));
 			NodeList predList = doc.getElementsByTagName("Predicate");
-			
+
 			for (int temp = 0; temp < predList.getLength(); temp++) {
-			
-					Element p = (Element) predList.item(temp);
-					String predicate = p.getAttribute("name");
-				
-					if (predicateList.contains(predicate))
-					{	
+
+				Element p = (Element) predList.item(temp);
+				String predicate = p.getAttribute("name");
+
+				if (predicateList.contains(predicate))
+				{	
 					String ifunction = statistics.resolutionFunctionforPredicate.get(predicate);
 
 					NodeList fList = p.getElementsByTagName("Function");
 
 					for (int temps = 0; temps < fList.getLength(); temps++) {
-						
+
 						Element f = (Element) fList.item(temps);
 						Double score = Double.parseDouble(f.getAttribute("score"));
 
@@ -160,31 +157,31 @@ public class auto_Selector {
 					predicateList.remove(predicate);
 				}									
 			}
-			
+
 			// Set rest of the predicates which are not in auto_selector yet
 			Iterator <String> notFound =predicateList.iterator(); 
 			while (notFound.hasNext()) {
-			String name = notFound.next().toString();	
-			
+				String name = notFound.next().toString();	
+
 				if (name != null) {	
-				Element e = predicateElement (doc, name);
-				doc.getDocumentElement().appendChild(e);		
-				
-			//set scores for all functions against this predicate
-			String selectedFunction = statistics.resolutionFunctionforPredicate.get(name);
-			int size = resolver.availableResolutionFunctions.length;
-			for (int i = 0; i< size; i++) {
-				Double score;
-				String availableFunction = resolver.availableResolutionFunctions[i];
-				if (selectedFunction.equals(availableFunction))
-					score = 1.0 / ( numberofIterations + 1 );
-				else
-					score =	0.0; 						
-				
-				e.appendChild(scoreElement(doc, "Function", availableFunction, score.toString()));
-				
-			}
-			}
+					Element e = predicateElement (doc, name);
+					doc.getDocumentElement().appendChild(e);		
+
+					//set scores for all functions against this predicate
+					String selectedFunction = statistics.resolutionFunctionforPredicate.get(name);
+					int size = resolver.availableResolutionFunctions.length;
+					for (int i = 0; i< size; i++) {
+						Double score;
+						String availableFunction = resolver.availableResolutionFunctions[i];
+						if (selectedFunction.equals(availableFunction))
+							score = 1.0 / ( numberofIterations + 1 );
+						else
+							score =	0.0; 						
+
+						e.appendChild(scoreElement(doc, "Function", availableFunction, score.toString()));
+
+					}
+				}
 			}
 			writeXML (doc, "auto_FunctionSelector.xml");
 		} catch (Exception e) {
@@ -192,7 +189,7 @@ public class auto_Selector {
 			e.printStackTrace();
 		}
 	}	
-	
+
 	public static void create () {
 
 		int size = resolver.availableResolutionFunctions.length;
@@ -232,11 +229,11 @@ public class auto_Selector {
 
 	}
 	public static Element predicateElement ( Document doc, String a1)
-			{
+	{
 		Element e = doc.createElement("Predicate");
 		e.setAttribute("name", a1);	
 		return e;
-			}
+	}
 	public static Element scoreElement ( Document doc, String e, String a1, String a2) 
 	{
 		Element af = doc.createElement(e);
@@ -244,15 +241,15 @@ public class auto_Selector {
 		af.setAttribute("score", a2);	
 		return af;
 	}
-	
+
 	public static void set (String p, String rf){	
 		statistics.resolutionFunctionforPredicate.put(p, rf);  
 	}
-	
+
 	public static List<String> getPredicates () throws IOException {
 		List<String> predicateList = new ArrayList<String>();
-		
-		BufferedReader br = new BufferedReader(new FileReader("predicates.txt"));
+
+		BufferedReader br = new BufferedReader(new FileReader(Co_Evolution_Manager.configure.predicates));
 
 		String line = null;
 
@@ -262,16 +259,16 @@ public class auto_Selector {
 		br.close();
 		return predicateList;
 	}
-	
-public static void writeXML (Document doc, String filename) throws TransformerException {
-	
-	Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
-	transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-	DOMSource source = new DOMSource(doc);
-	StreamResult result = new StreamResult(new File(filename));
+	public static void writeXML (Document doc, String filename) throws TransformerException {
 
-	transformer.transform(source, result);
-}
+		Transformer transformer = TransformerFactory.newInstance().newTransformer();
+
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(new File(filename));
+
+		transformer.transform(source, result);
+	}
 }

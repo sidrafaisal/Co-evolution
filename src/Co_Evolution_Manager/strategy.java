@@ -1,6 +1,5 @@
 package Co_Evolution_Manager;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
@@ -52,23 +51,18 @@ public class strategy {
 
 	//Ti+1 = delta (Si) + delta (Ti) + Ti - X
 	public static void syncsourceNkeeplocalBnotconflicts(){
-
 		conflicts_Finder.identifyConflicts(false);
 
 	}
 
+	
 	//Ti+1 = delta (Si) + delta (Ti) + Ti - X + NGT + ERT
 	public static void syncsourceNkeeplocalWresolvedconflicts(){
-		System.out.println("For manual resolution, press 0. For auto resolution, press 1.");	
-		String r = Co_Evolution_Manager.main.scanner.nextLine();
-
-		if (r.equals("0")) {
-			Conflict_Resolver.manual_Selector.select();
-			resolver.manual_selector = true;
-			conflicts_Finder.identifyConflicts(true);
-		}
-		else if (r.equals("1")) {
-			File file = new File("auto_FunctionSelector.xml");
+		
+		conflicts_Finder.identifyConflicts(true);		
+		
+		/*	For auto_Selector using scores
+		 * File file = new File("auto_FunctionSelector.xml");
 
 			if(!file.exists()) {
 				System.out.println("Auto resolution not possible, please select manually.");
@@ -80,8 +74,8 @@ public class strategy {
 				Conflict_Resolver.auto_Selector.select();
 				resolver.auto_selector = true;
 				conflicts_Finder.identifyConflicts(true);
-			}
-		}
+			}*/
+		
 
 	}
 

@@ -18,16 +18,28 @@ import Co_Evolution_Manager.configure;
 
 public class conflicts_Finder {
 
-	static boolean resolve;
-
+	public static boolean resolve;
+	public static long identificationTime = 0;
+	public static long resolutionTime = 0;
+	
 	public static void identifyConflicts(boolean r){
 
 		resolve = r;
 
-		source_Delta.apply(resolve);		
+		source_Delta.apply();	
+		
+		long startTime = System.currentTimeMillis();
+		
 		applyDelTarget();								//Step 3
 		applyAddTarget();								//Step 4
 		applyInitialTarget();							//Step 5
+
+		long endTime   = System.currentTimeMillis();
+		identificationTime = identificationTime + source_Delta.identificationTime + (endTime - startTime);		
+		source_Delta.identificationTime = 0;
+		
+		resolutionTime = resolutionTime + source_Delta.resolutionTime ;
+		source_Delta.resolutionTime = 0;
 	}	
 
 	/*Apply rest of the changes directly*/

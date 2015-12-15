@@ -32,7 +32,7 @@ public class manual_Selector {
 	public static void select () {
 		
 		Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();	
-
+		
 		//int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");.substring(0, pos)
 		filename = "manual_FunctionSelector_"+ Co_Evolution_Manager.configure.newTarget+".xml";
 		File file = new File(filename);
@@ -44,14 +44,14 @@ public class manual_Selector {
 				System.out.print(resolver.availableResolutionFunctions [i] + " . ");
 			BufferedReader br;
 			try {
-				br = new BufferedReader(new FileReader("predicates.txt"));
+				br = new BufferedReader(new FileReader(Co_Evolution_Manager.configure.predicates));
 
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					System.out.println("\nEnter a resolution function for this property: "+ line);
 
 					String rf = Co_Evolution_Manager.main.scanner.nextLine();
-					resolutionFunctionforPredicate.put(line, rf);
+					resolutionFunctionforPredicate.put(line, rf);					 					
 				}
 				br.close();
 			} catch (IOException e) {
@@ -100,30 +100,7 @@ public class manual_Selector {
 				}
 
 				statistics.resolutionFunctionforPredicate.put (key, value);			
-			}
-
-			
-
-/*					if (prefferedfname.equals("bestSource")){
-				System.out.println("\nEnter your first preference: source or target");
-				String prf = Co_Evolution_Manager.main.scanner.nextLine();
-				
-				statistics.preferedSourceforPredicate.put(predicate, prf);
-				st.setAttribute ("preference", prf);
-				
-			} else if (prefferedfname.equals("mostComplete")) {
-				
-				String sourceWithFewerBlanks = Conflict_Resolver.statistics.findBlankNodes(predicate);
-				statistics.preferedSourceforPredicate.put(predicate, sourceWithFewerBlanks);
-			
-			} else if (prefferedfname.equals("globalVote")) {
-			
-				Conflict_Resolver.statistics.globalVote(predicate);					
-		
-			}*/
-			
-			
-			
+			}		
 			
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
