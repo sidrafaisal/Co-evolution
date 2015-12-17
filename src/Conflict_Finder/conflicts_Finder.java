@@ -25,8 +25,8 @@ public class conflicts_Finder {
 	public static void identifyConflicts(boolean r){
 
 		resolve = r;
-
-		source_Delta.apply();	
+		if (configure.sourceAdditionsChangeset != null) 
+			source_Delta.apply();	
 		
 		long startTime = System.currentTimeMillis();
 		

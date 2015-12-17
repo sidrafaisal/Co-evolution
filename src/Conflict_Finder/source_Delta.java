@@ -1,15 +1,11 @@
 package Conflict_Finder;
 
-import Conflict_Finder.conflicts_Finder;
 import Conflict_Resolver.statistics;
 import Co_Evolution_Manager.configure;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,10 +53,11 @@ public class source_Delta {
 	public static long number_Of_case5Triples = 0;
 	public static long number_Of_case678Triples = 0;
 
+	public static long s3 = 0;
 
 	public static long resolutionTime = 0;
 	public static long identificationTime = 0;
-	public static Map <String, Integer> predicateFunctionUseCounter;
+	public static Map <String, Integer> predicateFunctionUseCounter = new HashMap <String, Integer> ();
 
 	public static void apply (){
 
@@ -68,6 +65,11 @@ public class source_Delta {
 		deletions_changeset();				//Step 2
 
 		identificationTime = identificationTime - resolutionTime;
+		if (configure.newTarget!=null) {
+			Model omodel = FileManager.get().loadModel(configure.newTarget, configure.fileSyntax);		
+			s3 += omodel.size();
+omodel.close();
+		}
 	}
 
 	/*Find conflicts for source additions changeset: Pick each triple s1,p1,o1 from source additions changeset and
@@ -77,7 +79,9 @@ public class source_Delta {
 		try {			
 			long startTime = System.currentTimeMillis();
 			Model omodel = FileManager.get().loadModel(configure.newTarget, configure.fileSyntax);		
-
+			Model sync_sa_model = FileManager.get().loadModel(configure.SyncSrcAdd, configure.fileSyntax);
+			Model sync_sd_model = FileManager.get().loadModel(configure.SyncSrcDel, configure.fileSyntax);
+			
 			if (configure.sourceAdditionsChangeset != null) {
 				Model model = FileManager.get().loadModel(configure.sourceAdditionsChangeset, configure.fileSyntax);
 				model.size();
@@ -91,7 +95,8 @@ public class source_Delta {
 					RDFNode   object    = stmt.getObject();      // get the object
 
 					//pick first value if we have multiple in source
-					String functionforPredicate = statistics.resolutionFunctionforPredicate.get(predicate.toString()); 
+					String functionforPredicate = statistics.resolutionFunctionforPredicate.get(predicate.toString());
+					//System.out.println(predicate.toString()+ functionforPredicate+"");
 					current_Predicate = predicate.toString();
 					List<Triple> conflictingTriplesDeletionSource = null, 
 							conflictingTriplesTarget = null, 
@@ -99,47 +104,57 @@ public class source_Delta {
 							conflictingTriplesDeletionTarget = null, 
 							conflictingTriplesSource = null;
 
-					boolean flag_DS = false, flag_T = false, flag_AT = false, flag_DT = false, flag_MS = false;
+					boolean flag_DS = false, flag_T = false, flag_AT = false, flag_DT = false, flag_MS = false, 
+							flag_RS = false, process = true;
 
 					if(statistics.predicateType.get(current_Predicate)!=null)
 						current_Predicate_Type = statistics.predicateType.get(current_Predicate);
 
 					// printTriple ("configure.sourceAdditionsChangeset", subject, predicate, object);
 					if (omodel.contains(subject, predicate)) {
-						if (!current_Predicate_Type.equals("F"))
+						if (!current_Predicate_Type.equals("F") ){
 							omodel.add(stmt);
-						number_Of_case123Triples++;
-					}
-					else {
-						conflictingTriplesDeletionSource = findCorrespondingTriples(configure.sourceDeletionsChangeset, subject, predicate, Node.ANY) ;
-						conflictingTriplesTarget = findCorrespondingTriples(configure.initialTarget, subject, predicate, Node.ANY) ;
-						conflictingTriplesAdditionTarget = findCorrespondingTriples(configure.targetAdditionsChangeset, subject, predicate, Node.ANY) ;
-						conflictingTriplesDeletionTarget = findCorrespondingTriples(configure.targetDeletionsChangeset, subject, predicate, Node.ANY) ;
-
-						if(conflictingTriplesDeletionSource.size() > 1) {
-							conflictingTriplesSource = findCorrespondingTriples(configure.sourceAdditionsChangeset, subject, predicate, Node.ANY) ;	
-							if (conflictingTriplesSource!=null) {
-								Triple t = conflictingTriplesSource.get(conflictingTriplesSource.size()-1); 
-
-								subject = ResourceFactory.createResource(t.getSubject().toString());
-								predicate = ResourceFactory.createProperty(t.getPredicate().toString());
-
-								object = ResourceFactory.createPlainLiteral(t.getObject().toString());
-								stmt = ResourceFactory.createStatement(subject, predicate, object);
-								flag_MS = true;
-							}
+							process = false;
+						} else {
+							conflictingTriplesAdditionTarget = ufindCorrespondingTriples(omodel, subject, predicate, Node.ANY) ;
+							flag_RS = true;
 						}
+						number_Of_case123Triples++;
 
-						if(conflictingTriplesDeletionSource.size() > 0)
-							flag_DS = true;
-						if(conflictingTriplesTarget.size() > 0)
-							flag_T = true;
-						if(conflictingTriplesAdditionTarget.size() > 0)
-							flag_AT = true;
-						if(conflictingTriplesDeletionTarget.size() > 0)
-							flag_DT = true;
+					}
+					if (process){
+						if (!flag_RS) {
+							conflictingTriplesDeletionSource = findCorrespondingTriples(configure.sourceDeletionsChangeset, subject, predicate, Node.ANY) ;
+							conflictingTriplesTarget = onlyfindCorrespondingTriples(configure.initialTarget, subject, predicate, Node.ANY) ;
+							conflictingTriplesAdditionTarget = findCorrespondingTriples(configure.targetAdditionsChangeset, subject, predicate, Node.ANY) ;
+							conflictingTriplesDeletionTarget = findCorrespondingTriples(configure.targetDeletionsChangeset, subject, predicate, Node.ANY) ;
 
+							if(conflictingTriplesDeletionSource.size() > 1) {
+								conflictingTriplesSource = findCorrespondingTriples(configure.sourceAdditionsChangeset, subject, predicate, Node.ANY) ;	
+								if (conflictingTriplesSource!=null) {
+									for (int i = 0 ; i < conflictingTriplesSource.size()-1 ; i++)
+										sync_sd_model.getGraph().add(conflictingTriplesSource.get(i));
+									Triple t = conflictingTriplesSource.get(conflictingTriplesSource.size()-1); 
 
+									subject = ResourceFactory.createResource(t.getSubject().toString());
+									predicate = ResourceFactory.createProperty(t.getPredicate().toString());
+
+									object = ResourceFactory.createPlainLiteral(t.getObject().toString());
+									stmt = ResourceFactory.createStatement(subject, predicate, object);
+									flag_MS = true;
+								}
+							}
+
+							if(conflictingTriplesDeletionSource.size() > 0)
+								flag_DS = true;
+							if(conflictingTriplesTarget.size() > 0)
+								flag_T = true;
+							if(conflictingTriplesAdditionTarget.size() > 0)
+								flag_AT = true;
+							if(conflictingTriplesDeletionTarget.size() > 0)
+								flag_DT = true;
+
+						}
 						//added by source || modified by source || modified by source and deleted by target
 						// In second case of (flag_DS && !flag_DT && !flag_AT), it does not matter whether this triple exists in initial target or not. 					
 						// New value will be added even if the target has previously deleted this triple					
@@ -156,14 +171,19 @@ public class source_Delta {
 						//added by source and modified by target, prefer target here 
 						else if (!flag_DS && flag_T && flag_DT && flag_AT) { 
 							omodel.getGraph().add(conflictingTriplesAdditionTarget.get(0));		
+							sync_sa_model.getGraph().add(conflictingTriplesAdditionTarget.get(0));
 							number_Of_case5Triples++;
-						}
+						} else if ((!flag_DS && !flag_DT && !flag_AT && flag_T) && conflictingTriplesTarget.contains(stmt.asTriple()))
+							number_Of_case123Triples++;
 						// added by source and target ||  modified by source and added by target || modified by source and modified by target				
 
 						else if ((!flag_DS && !flag_T && !flag_DT && flag_AT) ||  (flag_DS && !flag_DT && flag_AT && !flag_T) ||
-								(flag_DS && flag_T && flag_DT && flag_AT)) {
-							number_Of_case678Triples++;
-
+								(flag_DS && flag_T && flag_DT && flag_AT) || (!flag_DS && !flag_DT && !flag_AT && flag_T))  {
+							if ((!flag_DS && !flag_DT && !flag_AT && flag_T))
+								conflictingTriplesAdditionTarget = conflictingTriplesTarget;
+							if (!flag_RS) {
+								number_Of_case678Triples++;
+							}
 							int conflictingTriplesAdditionsize = conflictingTriplesAdditionTarget.size();
 
 							for (int i = 0; i < conflictingTriplesAdditionsize; i++) {
@@ -172,13 +192,19 @@ public class source_Delta {
 									if (conflictingTriplesAdditionsize == i+1) //current_Predicate_Type
 										omodel.add(stmt);					
 								} else if (current_Predicate.equals("http://www.w3.org/2000/01/rdf-schema#label")) {
-									boolean is_conflict = resolveLabels(omodel, stmt, conflictingTriplesAdditionTarget, functionforPredicate);
-									if (is_conflict) {									
-										if (flag_MS)
-											number_Of_ConflictingTriples += conflictingTriplesSource.size();
-										number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
-												conflictingTriplesAdditionTarget.size() + conflictingTriplesDeletionTarget.size() + 1; 
-										number_Of_ResolvedTriples++;
+									boolean is_conflict = resolveLabels(sync_sa_model, sync_sd_model,omodel, stmt, conflictingTriplesAdditionTarget, functionforPredicate, flag_RS);
+									if (is_conflict) {		
+										if (!flag_RS) {
+											if (flag_MS)
+												number_Of_ConflictingTriples += conflictingTriplesSource.size();
+
+											number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
+													conflictingTriplesAdditionTarget.size() + conflictingTriplesDeletionTarget.size() + 1; 
+											number_Of_ResolvedTriples++;
+										} else {
+
+											number_Of_ConflictingTriples += 1;	
+										}
 									}
 									break;								
 								} else if (current_Predicate.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type") ) {
@@ -187,6 +213,8 @@ public class source_Delta {
 										if (i==0)
 											omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
 										omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+										sync_sa_model.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+
 									} else {
 										boolean resolved = false;
 										for (int j = 1; j < conflictingTriplesAdditionsize; j++)
@@ -197,6 +225,8 @@ public class source_Delta {
 												if (!contains (omodel, triple)) 
 													omodel.getGraph().add(triple);
 												omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+												sync_sa_model.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+
 												resolved = true;
 											}
 										}
@@ -209,98 +239,140 @@ public class source_Delta {
 											resolutionTime = resolutionTime + (ert - srt);
 
 											Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createURI(rv));	
+											if(!stmt.asTriple().matches(triple)) {
+												sync_sa_model.getGraph().add(triple);
+												sync_sd_model.add(stmt);
+											}
 											omodel.getGraph().add(triple);	
 											int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
 											predicateFunctionUseCounter.put(current_Predicate, counter);
+											if (!flag_RS) {
+												if (flag_MS)//!conflictingTriplesSource.isEmpty()) //
+													number_Of_ConflictingTriples += conflictingTriplesSource.size();
+												number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
+														conflictingTriplesAdditionTarget.size() + conflictingTriplesDeletionTarget.size() + 1; 
 
+												number_Of_ResolvedTriples++;
+											} else {
+												number_Of_ConflictingTriples += 1;	
+												Iterator<Triple> remove = conflictingTriplesAdditionTarget.iterator();
+												while (remove.hasNext())
+												{
+													triple = remove.next();	
+													Statement s = ResourceFactory.createStatement( 
+															ResourceFactory.createResource(triple.getSubject().toString()),
+															ResourceFactory.createProperty(triple.getPredicate().toString()),
+															ResourceFactory.createPlainLiteral(triple.getObject().toString())
+															);
+													omodel.remove(s);
+													sync_sa_model.remove(s);
+												}
+											}
+										}									
+										break;
+									}
+								} else if (current_Predicate.equals("http://www.w3.org/2002/07/owl#sameAs")) {
+									if (i==0)
+										omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
+									omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+									sync_sa_model.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+
+								} else if (!current_Predicate.equals("http://www.w3.org/2002/07/owl#sameAs") &&
+										Co_Evolution_Manager.configure.predicateList.contains("http://www.w3.org/2002/07/owl#sameAs")	
+										&& object.isURIResource()) { // if we have sameAs triples, check if both objects are in sameas binding
+									Property p = ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#sameAs");
+
+									List<Triple> sameAsInTargetAdd = findCorrespondingTriples(configure.targetAdditionsChangeset, object.asResource(), p, t.getObject()) ;
+									List<Triple> sameAsInTargetDel = findCorrespondingTriples(configure.targetDeletionsChangeset, object.asResource(), p, t.getObject()) ;	
+									List<Triple> sameAsInSourceDel = findCorrespondingTriples(configure.sourceDeletionsChangeset, object.asResource(), p, t.getObject()) ;	
+									List<Triple> sameAsInTarget = findCorrespondingTriples(configure.initialTarget, object.asResource(), p, t.getObject()) ;	
+
+									if (!sameAsInTargetAdd.isEmpty() || !sameAsInTargetDel.isEmpty() || !sameAsInSourceDel.isEmpty() || !sameAsInTarget.isEmpty()) {									
+										if (i==0)
+											omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
+
+										omodel.getGraph().add(Triple.create(object.asNode(), p.asNode(),  t.getObject()));									
+										omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+										sync_sa_model.getGraph().add(Triple.create(object.asNode(), p.asNode(),  t.getObject()));
+										sync_sa_model.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+											
+									} else	{
+										Resource r = ResourceFactory.createResource(t.getObject().toString());
+										sameAsInTargetAdd = findCorrespondingTriples(configure.targetAdditionsChangeset, r, p, object.asNode()) ;
+										sameAsInTarget = findCorrespondingTriples(configure.initialTarget, r, p, object.asNode()) ;
+										sameAsInTargetDel = findCorrespondingTriples(configure.targetDeletionsChangeset, r, p, object.asNode()) ; 
+										sameAsInSourceDel = findCorrespondingTriples(configure.sourceDeletionsChangeset, r, p, object.asNode()) ;	
+
+										if (!sameAsInTargetAdd.isEmpty() || !sameAsInTargetDel.isEmpty() || !sameAsInSourceDel.isEmpty() || !sameAsInTarget.isEmpty()) {
+
+											if (i==0)
+												omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
+
+											omodel.getGraph().add(Triple.create(r.asNode(), p.asNode(), object.asNode()));	
+											omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));	
+											sync_sa_model.getGraph().add(Triple.create(r.asNode(), p.asNode(), object.asNode()));
+											sync_sa_model.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
+												
+										} else if (Conflict_Finder.conflicts_Finder.resolve) {
+											String [] args = {"",""};
+											args [0] = object.asResource().getURI().toString();
+											args [1] = t.getObject().getURI().toString() ;	
+											long srt = System.currentTimeMillis();
+											String rv = Conflict_Resolver.resolver.apply(functionforPredicate, args, "String"); 
+											long ert   = System.currentTimeMillis();
+											resolutionTime = resolutionTime + (ert - srt);
+
+											Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createURI(rv));
+											if (!contains (omodel, triple)) 
+												omodel.getGraph().add(triple);
+											
+											if(!stmt.asTriple().matches(triple)) {
+												sync_sa_model.getGraph().add(triple);
+												sync_sd_model.add(stmt);
+											}
+											int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
+											predicateFunctionUseCounter.put(current_Predicate, counter);
+
+											if (!flag_RS) {
+												number_Of_ResolvedTriples++;
+												if (i==0) {
+													number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
+															conflictingTriplesDeletionTarget.size() + 2;// 1 for add target, 1 for src add
+													if (flag_MS)
+														number_Of_ConflictingTriples += conflictingTriplesSource.size();
+												} else
+													number_Of_ConflictingTriples += 1;
+											} else {
+
+												triple = t;	
+												Statement s = ResourceFactory.createStatement( 
+														ResourceFactory.createResource(triple.getSubject().toString()),
+														ResourceFactory.createProperty(triple.getPredicate().toString()),
+														ResourceFactory.createPlainLiteral(triple.getObject().toString())
+														);
+												omodel.remove(s);
+												sync_sa_model.remove(s);
+
+												number_Of_ConflictingTriples += 1;
+											}
+										}
+									}
+								} // prev case of sameAs works only for object URIs, whereas we can also have literals
+								else if (Conflict_Finder.conflicts_Finder.resolve) {
+									boolean is_conflict = resolveGenerally (sync_sa_model, sync_sd_model, omodel, stmt, conflictingTriplesAdditionTarget, functionforPredicate, flag_RS);	
+
+									if (is_conflict) {
+										if (!flag_RS) {								
 											if (flag_MS)
 												number_Of_ConflictingTriples += conflictingTriplesSource.size();
 											number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
 													conflictingTriplesAdditionTarget.size() + conflictingTriplesDeletionTarget.size() + 1; 
 											number_Of_ResolvedTriples++;
-										}									
-										break;
-									}
-								}/* else if ( ((Co_Evolution_Manager.configure.predicateList.contains("http://www.w3.org/2002/07/owl#sameAs")	
-									&& object.isLiteral()) ||
-									!Co_Evolution_Manager.configure.predicateList.contains("http://www.w3.org/2002/07/owl#sameAs"))) {
-								if (Conflict_Finder.conflicts_Finder.resolve)
-									notResolvableUsingSameAs (omodel, stmt, conflictingTriplesAdditionTarget, functionforPredicate);							
-								break;
-							}*/ else if (current_Predicate.equals("http://www.w3.org/2002/07/owl#sameAs")) {
-								if (i==0)
-									omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
-								omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
-
-							} else if (!current_Predicate.equals("http://www.w3.org/2002/07/owl#sameAs") &&
-									Co_Evolution_Manager.configure.predicateList.contains("http://www.w3.org/2002/07/owl#sameAs")	
-									&& object.isURIResource()) { // if we have sameAs triples, check if both objects are in sameas binding
-								Property p = ResourceFactory.createProperty("http://www.w3.org/2002/07/owl#sameAs");
-
-								List<Triple> sameAsInTargetAdd = findCorrespondingTriples(configure.targetAdditionsChangeset, object.asResource(), p, t.getObject()) ;
-								List<Triple> sameAsInTargetDel = findCorrespondingTriples(configure.targetDeletionsChangeset, object.asResource(), p, t.getObject()) ;	
-								List<Triple> sameAsInSourceDel = findCorrespondingTriples(configure.sourceDeletionsChangeset, object.asResource(), p, t.getObject()) ;	
-								List<Triple> sameAsInTarget = findCorrespondingTriples(configure.initialTarget, object.asResource(), p, t.getObject()) ;	
-
-								if (!sameAsInTargetAdd.isEmpty() || !sameAsInTargetDel.isEmpty() || !sameAsInSourceDel.isEmpty() || !sameAsInTarget.isEmpty()) {									
-									if (i==0)
-										omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
-
-									omodel.getGraph().add(Triple.create(object.asNode(), p.asNode(),  t.getObject()));									
-									omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));
-								} else	{
-									Resource r = ResourceFactory.createResource(t.getObject().toString());
-									sameAsInTargetAdd = findCorrespondingTriples(configure.targetAdditionsChangeset, r, p, object.asNode()) ;
-									sameAsInTarget = findCorrespondingTriples(configure.initialTarget, r, p, object.asNode()) ;
-									sameAsInTargetDel = findCorrespondingTriples(configure.targetDeletionsChangeset, r, p, object.asNode()) ; 
-									sameAsInSourceDel = findCorrespondingTriples(configure.sourceDeletionsChangeset, r, p, object.asNode()) ;	
-
-									if (!sameAsInTargetAdd.isEmpty() || !sameAsInTargetDel.isEmpty() || !sameAsInSourceDel.isEmpty() || !sameAsInTarget.isEmpty()) {
-
-										if (i==0)
-											omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
-
-										omodel.getGraph().add(Triple.create(r.asNode(), p.asNode(), object.asNode()));	
-										omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), t.getObject()));	
-									} else if (Conflict_Finder.conflicts_Finder.resolve) {
-										String [] args = {"",""};
-										args [0] = object.asResource().getURI().toString();
-										args [1] = t.getObject().getURI().toString() ;	
-										long srt = System.currentTimeMillis();
-										String rv = Conflict_Resolver.resolver.apply(functionforPredicate, args, "String"); 
-										long ert   = System.currentTimeMillis();
-										resolutionTime = resolutionTime + (ert - srt);
-
-										Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createURI(rv));
-										if (!contains (omodel, triple)) 
-											omodel.getGraph().add(triple);
-										int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
-										predicateFunctionUseCounter.put(current_Predicate, counter);
-
-										number_Of_ResolvedTriples++;
-										if (i==0) {
-											number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
-													conflictingTriplesDeletionTarget.size() + 2;// 1 for add target, 1 for src add
-											if (flag_MS)
-												number_Of_ConflictingTriples += conflictingTriplesSource.size();
-										}
-										else
+										} else 
 											number_Of_ConflictingTriples += 1;
-
 									}
+									break;
 								}
-							} // prev case of sameAs works only for object URIs, whereas we can also have literals
-							else if (Conflict_Finder.conflicts_Finder.resolve) {
-								boolean is_conflict = resolveGenerally (omodel, stmt, conflictingTriplesAdditionTarget, functionforPredicate);	
-								if (is_conflict) {
-									if (flag_MS)
-										number_Of_ConflictingTriples += conflictingTriplesSource.size();
-									number_Of_ConflictingTriples += conflictingTriplesDeletionSource.size() + conflictingTriplesTarget.size() + 
-											conflictingTriplesAdditionTarget.size() + conflictingTriplesDeletionTarget.size() + 1; 
-									number_Of_ResolvedTriples++;
-								}
-								break;
-							}
 							}				
 						}
 					}
@@ -309,8 +381,12 @@ public class source_Delta {
 
 			}
 			omodel.write(new FileOutputStream(configure.newTarget), configure.fileSyntax);
-
 			omodel.close();	
+			sync_sa_model.write(new FileOutputStream(configure.SyncSrcAdd), configure.fileSyntax);
+			sync_sa_model.close();	
+			sync_sd_model.write(new FileOutputStream(configure.SyncSrcDel), configure.fileSyntax);
+			sync_sd_model.close();	
+
 			long endTime   = System.currentTimeMillis();
 			identificationTime = identificationTime + (endTime - startTime);
 
@@ -320,7 +396,7 @@ public class source_Delta {
 	}	
 
 
-	public static boolean resolveGenerally (Model omodel, Statement stmt, List<Triple> conflictingTriplesAdditionTarget, String functionforPredicate) {							
+	public static boolean resolveGenerally (Model sync_sa_model, Model sync_sd_model, Model omodel, Statement stmt, List<Triple> conflictingTriplesAdditionTarget, String functionforPredicate, boolean flag_RS) {							
 
 		Resource  subject   = stmt.getSubject();     // get the subject
 		Property  predicate = stmt.getPredicate();   // get the predicate
@@ -335,38 +411,96 @@ public class source_Delta {
 			long ert   = System.currentTimeMillis();
 			resolutionTime = resolutionTime + (ert - srt);
 			is_conflict = true;
+			if (flag_RS) {
+				Iterator<Triple> remove = conflictingTriplesAdditionTarget.iterator();
+				while (remove.hasNext())
+				{
+					Triple triple = remove.next();	
+					if (!triple.getObject().toString().equals(rv))
+					{
+						Statement s = ResourceFactory.createStatement( 
+
+								ResourceFactory.createResource(triple.getSubject().toString()),
+								ResourceFactory.createProperty(triple.getPredicate().toString()),
+								ResourceFactory.createPlainLiteral(triple.getObject().toString())
+								);
+						omodel.remove(s);
+						sync_sa_model.remove(s);
+					}
+				}
+			}
 			Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createURI(rv));	
 			if (!contains (omodel, triple)) 
 				omodel.getGraph().add(triple);
+
+			if(!stmt.asTriple().matches(triple)) {
+				sync_sa_model.getGraph().add(triple);
+				sync_sd_model.add(stmt);
+			}
 			int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
 			predicateFunctionUseCounter.put(current_Predicate, counter);
 
 		} else if (object.isLiteral()) {
 			String type = getType(object.asLiteral().getDatatypeURI());
+
 			long srt = System.currentTimeMillis();
 			String rv = Conflict_Resolver.resolver.apply(functionforPredicate, getLiteralstoResolve (object, conflictingTriplesAdditionTarget), type); 
+			long ert   = System.currentTimeMillis();
+			resolutionTime = resolutionTime + (ert - srt);
 			is_conflict = true;
-			if (conflictingTriplesAdditionTarget.contains(rv)) {
-				Node temp = conflictingTriplesAdditionTarget.get(conflictingTriplesAdditionTarget.indexOf(rv)).getObject();
-				if (temp.getLiteralLanguage()!=null)
-					type = temp.getLiteralLanguage();
-				else {
+			if (flag_RS) {
+				Iterator<Triple> remove = conflictingTriplesAdditionTarget.iterator();
+				while (remove.hasNext())
+				{
+					Triple triple = remove.next();	
+					if (!triple.getObject().toString().equals(rv))
+					{
+						Statement s = ResourceFactory.createStatement( 
+
+								ResourceFactory.createResource(triple.getSubject().toString()),
+								ResourceFactory.createProperty(triple.getPredicate().toString()),
+								ResourceFactory.createPlainLiteral(triple.getObject().toString())
+								);
+						omodel.remove(s);
+						sync_sa_model.add(s);
+					}
+				}
+			}	
+			type = object.asLiteral().getDatatypeURI();
+			if(type.equals(null)) {
+				if (conflictingTriplesAdditionTarget.contains(rv)) {
+					Node temp = conflictingTriplesAdditionTarget.get(conflictingTriplesAdditionTarget.indexOf(rv)).getObject();
+					if (temp.getLiteralLanguage()!=null)
+						type = temp.getLiteralLanguage();
+					else {
+						String slang = object.asLiteral().getLanguage();
+						if (slang!=null)
+							type = slang;
+					}					
+				} else {
 					String slang = object.asLiteral().getLanguage();
 					if (slang!=null)
 						type = slang;
-				}					
-			} else {
-				String slang = object.asLiteral().getLanguage();
-				if (slang!=null)
-					type = slang;
+				}
+				Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, type));	
+				if (!contains (omodel, triple)) 
+					omodel.getGraph().add(triple);
+
+				if(!stmt.asTriple().matches(triple)) {
+					sync_sa_model.getGraph().add(triple);
+					sync_sd_model.add(stmt);
+				}
+			} else{
+				Triple triple = Triple.create(subject.asNode(), predicate.asNode(), omodel.createTypedLiteral(rv, type).asNode());	
+				if (!contains (omodel, triple)) 
+					omodel.getGraph().add(triple);
+
+				if(!stmt.asTriple().matches(triple)) {
+					sync_sa_model.getGraph().add(triple);
+					sync_sd_model.add(stmt);
+				}
 			}
 
-			long ert   = System.currentTimeMillis();
-			resolutionTime = resolutionTime + (ert - srt);
-
-			Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, type));
-			//if (!contains (omodel, triple)) 
-			omodel.getGraph().add(triple);
 			int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
 			predicateFunctionUseCounter.put(current_Predicate, counter);
 		}	
@@ -374,56 +508,7 @@ public class source_Delta {
 		//		number_Of_ConflictingTriples++;	
 	}
 
-	/*	public static void notResolvableUsingSameAs (Model omodel, Statement stmt, List<Triple> conflictingTriplesAdditionTarget, String functionforPredicate) {							
-
-		Resource  subject   = stmt.getSubject();     // get the subject
-		Property  predicate = stmt.getPredicate();   // get the predicate
-		RDFNode   object    = stmt.getObject(); 
-		//if (current_Predicate_Type.equals("F")) 
-
-		if (object.isURIResource()) {
-			long srt = System.currentTimeMillis();
-			String rv = Conflict_Resolver.resolver.apply(functionforPredicate, getURIstoResolve (object, conflictingTriplesAdditionTarget), "String"); 
-
-			long ert   = System.currentTimeMillis();
-			resolutionTime = resolutionTime + (ert - srt);
-			Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createURI(rv));	
-			//	if (!contains (omodel, triple)) 
-			omodel.getGraph().add(triple);		
-			int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
-			predicateFunctionUseCounter.put(current_Predicate, counter);
-
-		} else if (object.isLiteral()) {
-			String type = getType(object.asLiteral().getDatatypeURI());
-			long srt = System.currentTimeMillis();
-			String rv = Conflict_Resolver.resolver.apply(functionforPredicate, getLiteralstoResolve (object, conflictingTriplesAdditionTarget), type); 
-			if (conflictingTriplesAdditionTarget.contains(rv)) {
-				Node temp = conflictingTriplesAdditionTarget.get(conflictingTriplesAdditionTarget.indexOf(rv)).getObject();
-				if (temp.getLiteralLanguage()!=null)
-					type = temp.getLiteralLanguage();
-				else {
-					String slang = object.asLiteral().getLanguage();
-					if (slang!=null)
-						type = slang;
-				}					
-			} else {
-				String slang = object.asLiteral().getLanguage();
-				if (slang!=null)
-					type = slang;
-			}
-			long ert   = System.currentTimeMillis();
-			resolutionTime = resolutionTime + (ert - srt);
-
-			Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, type));
-			//	if (!contains (omodel, triple)) 
-			omodel.getGraph().add(triple);		
-			int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
-			predicateFunctionUseCounter.put(current_Predicate, counter);
-		}		
-	//	number_Of_ConflictingTriples++; 	
-	}
-	 */
-	public static boolean resolveLabels(Model omodel, Statement stmt, List<Triple> conflictingTriplesAdditionTarget, String functionforPredicate) {
+	public static boolean resolveLabels(Model sync_sa_model, Model sync_sd_model, Model omodel, Statement stmt, List<Triple> conflictingTriplesAdditionTarget, String functionforPredicate, boolean flag_RS) {
 		int maxdiff = 0;
 		Triple t;
 		boolean is_conflict = false;
@@ -434,8 +519,8 @@ public class source_Delta {
 		int iteration = 0;
 		for (int j = 0; j < conflictingTriplesAdditionTarget.size(); j++) {
 			t = conflictingTriplesAdditionTarget.get(j);
-			String s_value = object.asNode().toString();
-			String t_value = t.getObject().toString();
+			String s_value = object.asLiteral().getLexicalForm().toString();
+			String t_value = t.getObject().getLiteralLexicalForm();
 			int threshold = Math.max(s_value.length(), t_value.length())/2;
 			int diff = StringUtils.getLevenshteinDistance(s_value, t_value); //greater the diff,lesser the similarity
 
@@ -444,9 +529,10 @@ public class source_Delta {
 				iteration = j;	
 			}
 		}									
-		if (maxdiff > 0) {							// pick least similar string
+		if (maxdiff > 0) {							// pick both that are least similar
 			t = conflictingTriplesAdditionTarget.get(iteration);
 			Triple triple = Triple.create(subject.asNode(), predicate.asNode(), t.getObject());
+			sync_sa_model.getGraph().add(triple);
 			//if (!contains (omodel, triple)) 
 			omodel.getGraph().add(triple);	
 			omodel.getGraph().add(Triple.create(subject.asNode(), predicate.asNode(), object.asNode()));
@@ -457,43 +543,78 @@ public class source_Delta {
 
 			long srt = System.currentTimeMillis();
 			String rv = Conflict_Resolver.resolver.apply(functionforPredicate, getLiteralstoResolve (object, conflictingTriplesAdditionTarget), type); 
-
+			
 			long ert   = System.currentTimeMillis();
 			resolutionTime = resolutionTime + (ert - srt);
 			is_conflict = true;
+			if (flag_RS) {
+				Iterator<Triple> remove = conflictingTriplesAdditionTarget.iterator();
+				while (remove.hasNext())
+				{
+					Triple triple = remove.next();	
+					if (!triple.getObject().toString().equals(rv))
+					{
+						Statement s = ResourceFactory.createStatement( 
+
+								ResourceFactory.createResource(triple.getSubject().toString()),
+								ResourceFactory.createProperty(triple.getPredicate().toString()),
+								ResourceFactory.createPlainLiteral(triple.getObject().toString())
+								);
+						omodel.remove(s);
+						sync_sa_model.remove(s);
+					}
+				}
+			}
 			//	number_Of_ResolvedTriples++;
-			if (conflictingTriplesAdditionTarget.contains(rv)) {
-				Node temp = conflictingTriplesAdditionTarget.get(conflictingTriplesAdditionTarget.indexOf(rv)).getObject();
-				if (temp.getLiteralLanguage()!=null)
-					type = temp.getLiteralLanguage();
-				else {
+			type = object.asLiteral().getDatatypeURI();
+			if(type.equals(null)) {
+				if (conflictingTriplesAdditionTarget.contains(rv)) {
+					Node temp = conflictingTriplesAdditionTarget.get(conflictingTriplesAdditionTarget.indexOf(rv)).getObject();
+					if (temp.getLiteralLanguage()!=null)
+						type = temp.getLiteralLanguage();
+					else {
+						String slang = object.asLiteral().getLanguage();
+						if (slang!=null)
+							type = slang;
+					}					
+				} else {
 					String slang = object.asLiteral().getLanguage();
 					if (slang!=null)
 						type = slang;
-				}					
-			} else {
-				String slang = object.asLiteral().getLanguage();
-				if (slang!=null)
-					type = slang;
-			}
+				}
+				Triple triple = Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, type));	
+				
+				if (!contains (omodel, triple)) {
+					omodel.getGraph().add(triple);
+					if(!stmt.asTriple().matches(triple)) {
+						sync_sa_model.getGraph().add(triple);
+						sync_sd_model.add(stmt);
+					}
+				}
+			} else{
+				Triple triple = Triple.create(subject.asNode(), predicate.asNode(), omodel.createTypedLiteral(rv, type).asNode());	
+				if (!contains (omodel, triple)) {
+					omodel.getGraph().add(triple);
+					sync_sa_model.getGraph().add(triple);
+					sync_sd_model.add(stmt);
+				}
+			}		
 
-			Triple triple =Triple.create(subject.asNode(), predicate.asNode(), NodeFactory.createLiteral(rv, type));
-			//if (!contains (omodel, triple)) 
-			omodel.getGraph().add(triple);		
 			int counter = predicateFunctionUseCounter.get(current_Predicate) + 1;
 			predicateFunctionUseCounter.put(current_Predicate, counter);
 			//	number_Of_ConflictingTriples++;
 		}	
+
 		return is_conflict;
 	}
 
 	public static String [] getLiteralstoResolve (RDFNode object, List<Triple> conflictingTriplesAdditionTarget) {
 		String [] args = new String [conflictingTriplesAdditionTarget.size() + 1];
-		args [0] = object.asLiteral().getValue().toString();
+		args [0] = object.asLiteral().getLexicalForm().toString();		
 
 		for (int j = 0; j < conflictingTriplesAdditionTarget.size(); j++) {
 			Triple t = conflictingTriplesAdditionTarget.get(j);
-			args [j+1] = t.getObject().getLiteralValue().toString();
+			args [j+1] = t.getObject().getLiteralLexicalForm().toString();
 		}
 		return args;
 	}
@@ -595,7 +716,6 @@ and check for s1,p1,o2 in target changesets and initial target*/
 		}
 	}	
 
-
 	/*			Find conflicting triples in target*/
 
 	public static List<Triple> findCorrespondingTriples(String filename, Resource subject, Property predicate, Node object) {
@@ -622,6 +742,54 @@ and check for s1,p1,o2 in target changesets and initial target*/
 				e.printStackTrace();
 			}
 		}
+		return conflictingTriples;
+	}
+
+	public static List<Triple> onlyfindCorrespondingTriples(String filename, Resource subject, Property predicate, Node object) {
+
+		List<Triple> conflictingTriples = new ArrayList<Triple>();
+
+		if (filename!=null){
+			try {
+				Model model = FileManager.get().loadModel(filename, configure.fileSyntax);
+
+				ExtendedIterator<Triple> results = model.getGraph().find(subject.asNode(), predicate.asNode(), object); 
+				while (results.hasNext()) {
+					Triple t = results.next();
+					conflictingTriples.add(t); 
+				}
+
+				for (Triple deleteConflict : conflictingTriples) // Delete the conflicting triples from input file
+					;//model.getGraph().delete(deleteConflict);
+
+			//	model.write(new FileOutputStream(filename), configure.fileSyntax);
+				model.close();
+
+			} catch (org.apache.jena.riot.RiotException e) {
+				e.printStackTrace();
+			}
+		}
+		return conflictingTriples;
+	}
+	/*			Find conflicting triples in target*/
+
+	public static List<Triple> ufindCorrespondingTriples(Model model, Resource subject, Property predicate, Node object) {
+
+		List<Triple> conflictingTriples = new ArrayList<Triple>();
+		try {
+			ExtendedIterator<Triple> results = model.getGraph().find(subject.asNode(), predicate.asNode(), object); 
+			while (results.hasNext()) {
+				Triple t = results.next();
+				conflictingTriples.add(t); 
+			}
+
+			for (Triple deleteConflict : conflictingTriples) // Delete the conflicting triples from input file
+				;//			model.getGraph().delete(deleteConflict);
+
+		} catch (org.apache.jena.riot.RiotException e) {
+			e.printStackTrace();
+		}
+
 		return conflictingTriples;
 	}
 
@@ -660,6 +828,8 @@ and check for s1,p1,o2 in target changesets and initial target*/
 		}
 	}	
 
+	public static Map<String, Integer> usedFunctions = new HashMap<String, Integer>();
+	
 	public static void getPredicateFunctionUseCounter () {
 		Map<String, Integer> usedFunction = new HashMap<String, Integer>();
 		Iterator<String> predicateList = Co_Evolution_Manager.configure.predicateList.iterator();
@@ -678,5 +848,7 @@ and check for s1,p1,o2 in target changesets and initial target*/
 		for (String fun : funList) {
 			System.out.println(fun+ ", " + usedFunction.get(fun));
 		}
+		usedFunctions = usedFunction;
 	}	
+	
 }

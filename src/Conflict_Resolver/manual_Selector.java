@@ -30,7 +30,6 @@ public class manual_Selector {
 	public static String filename = "";
 
 	public static void select () {
-		
 		Map<String, String> resolutionFunctionforPredicate  = new HashMap<String, String>();	
 		
 		//int pos	= Co_Evolution_Manager.configure.newTarget.indexOf(".");.substring(0, pos)
@@ -42,21 +41,25 @@ public class manual_Selector {
 			System.out.println("Avaialable resolution functions:");
 			for (int i = 0; i < size; i++) 
 				System.out.print(resolver.availableResolutionFunctions [i] + " . ");
-			BufferedReader br;
+			for (String p : Co_Evolution_Manager.configure.predicateList) {
+				System.out.println("\nEnter a resolution function for this property: "+ p);
+
+				String rf = Co_Evolution_Manager.main.scanner.nextLine();
+				resolutionFunctionforPredicate.put(p, rf);		
+			}
+			
+/*			BufferedReader br;
 			try {
 				br = new BufferedReader(new FileReader(Co_Evolution_Manager.configure.predicates));
 
 				String line = null;
 				while ((line = br.readLine()) != null) {
-					System.out.println("\nEnter a resolution function for this property: "+ line);
-
-					String rf = Co_Evolution_Manager.main.scanner.nextLine();
-					resolutionFunctionforPredicate.put(line, rf);					 					
+								 					
 				}
 				br.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
+			}*/
 			create(resolutionFunctionforPredicate);		
 		}
 		else 

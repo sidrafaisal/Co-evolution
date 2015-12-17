@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Predicate_Function>
+    <Predicate function="any" name="http://xmlns.com/foaf/0.1/depiction"/>
+    <Predicate function="any" name="http://dbpedia.org/property/party"/>
+    <Predicate function="any" name="http://dbpedia.org/ontology/nationality"/>
+    <Predicate function="longest" name="http://dbpedia.org/ontology/abstract"/>
+    <Predicate function="first" name="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"/>
+    <Predicate function="any" name="http://dbpedia.org/property/office"/>
+    <Predicate function="any" name="http://xmlns.com/foaf/0.1/name"/>
+</Predicate_Function>

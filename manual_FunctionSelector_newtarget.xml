@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Predicate_Function>
-    <Predicate function="bestSource" name="http://dbpedia.org/property/goals" preference="target"/>
-    <Predicate function="bestSource" name="http://www.w3.org/1999/02/22-rdf-syntax-ns#type" preference="target"/>
-</Predicate_Function>
